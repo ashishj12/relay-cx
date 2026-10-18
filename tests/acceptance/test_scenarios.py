@@ -3,7 +3,6 @@ from pathlib import Path
 import pytest
 from relay_api.evaluation.scenarios import run_scenario
 
-
 @pytest.mark.parametrize("number", range(1, 9))
 def test_mandatory_scenario(stack, number):
     result = run_scenario(stack[0], f"SCN-{number:03}")

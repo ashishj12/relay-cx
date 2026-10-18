@@ -1,12 +1,9 @@
-"""Run real ADK Runner/tool dispatch with a scripted model, without network access."""
-
 from collections.abc import AsyncGenerator
 import json
 from google.adk.models import BaseLlm, LlmResponse
 from google.genai import types
 from relay_api.agents.runtime import AdkProvider
 from relay_api.domain.models import Chat
-
 
 class ScriptedModel(BaseLlm):
     replies: list[types.Content]
@@ -16,16 +13,13 @@ class ScriptedModel(BaseLlm):
             raise AssertionError("Agent exceeded its expected model calls")
         yield LlmResponse(content=self.replies.pop(0))
 
-
 def answer(value):
     return types.Content(role="model", parts=[types.Part(text=json.dumps(value))])
-
 
 def tool(name):
     return types.Content(
         role="model", parts=[types.Part(function_call=types.FunctionCall(name=name, args={}))]
     )
-
 
 def test_adk_runner_calls_authorized_account_tool(stack, customer):
     service, mock, _ = stack

@@ -1,5 +1,3 @@
-"""Negative behavior and durability checks required by the final challenge directive."""
-
 import copy
 import json
 import time

@@ -1,9 +1,6 @@
-"""Regression for Docker sign-in from localhost, plus the production origin boundary."""
-
 import httpx
 import pytest
 from relay_api.core.origins import origin_allowed
-
 
 @pytest.mark.parametrize("host", ["localhost", "127.0.0.1"])
 def test_login_accepts_local_browser_alias(stack, monkeypatch, host):
@@ -21,7 +18,6 @@ def test_login_accepts_local_browser_alias(stack, monkeypatch, host):
         assert client.get("/api/session").json() == payload
         assert client.get("/api/agents").json()["framework"] == "google-adk"
         assert client.get("/api/activity").status_code == 200
-
 
 @pytest.mark.parametrize(
     "origin",
@@ -41,7 +37,6 @@ def test_other_origins_remain_denied(origin):
 def test_production_origin_remains_exact():
     assert origin_allowed("https://relay.example", "https://relay.example")
     assert not origin_allowed("https://www.relay.example", "https://relay.example")
-
 
 def test_activity_cannot_read_other_customer_events(stack):
     with (

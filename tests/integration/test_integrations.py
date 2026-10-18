@@ -3,7 +3,6 @@ import pytest
 from relay_api.infrastructure.enterprise import IntegrationError, parse_legacy
 from relay_api.domain.models import Chat
 
-
 def xml(**overrides):
     d = dict(
         ACCT_NO="ACC-2001",
