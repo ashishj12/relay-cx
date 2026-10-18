@@ -1,5 +1,3 @@
-"""Allowlisted enterprise operations. Ownership is checked before any protected read."""
-
 import json
 import os
 import time
@@ -10,17 +8,12 @@ import xml.etree.ElementTree as ET
 from pydantic import ValidationError
 from relay_api.domain.models import Auth, Profile, Account, Billing, Outage, Diagnostic, Case
 
-
 class IntegrationError(Exception):
     def __init__(self, service, reason, temporary=False):
         self.service, self.reason, self.temporary = service, reason, temporary
         super().__init__(service + ":" + reason)
-
-
 class Denied(Exception):
     pass
-
-
 class Gateway:
     def __init__(self, store, base, timeout=2, retries=1):
         self.store, self.base, self.timeout, self.retries = store, base.rstrip("/"), timeout, retries

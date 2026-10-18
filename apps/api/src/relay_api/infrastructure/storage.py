@@ -1,5 +1,3 @@
-"""SQLite persistence; bearer secrets are hashed and never included in telemetry."""
-
 import hashlib
 import json
 import os
@@ -14,15 +12,11 @@ from jsonschema import Draft202012Validator
 from relay_api.ai.providers import redact
 from relay_api.core.config import CHALLENGE_ROOT
 
-
 def uid(prefix):
     return prefix + "-" + uuid.uuid4().hex
 
-
 def digest(token):
     return hashlib.sha256(token.encode()).hexdigest()
-
-
 class Store:
     def __init__(self, path):
         self.path = str(path)

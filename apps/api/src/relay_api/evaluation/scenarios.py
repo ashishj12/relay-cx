@@ -1,12 +1,8 @@
-"""Executable assertions against the same application and real mock HTTP adapters."""
-
 import json
 from relay_api.domain.models import Chat, Confirmation
-
 from relay_api.core.config import CHALLENGE_ROOT
 
 ROOT = CHALLENGE_ROOT
-
 
 def run_scenario(app, scenario):
     if scenario not in [f"SCN-{i:03}" for i in range(1, 9)]:

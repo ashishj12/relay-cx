@@ -1,5 +1,3 @@
-"""Load only allowlisted configuration; never execute .env content or print secrets."""
-
 import os
 from pathlib import Path
 

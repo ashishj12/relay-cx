@@ -1,5 +1,3 @@
-"""Public agent capabilities. This describes configuration, not execution history."""
-
 AGENTS = [
     {
         "name": "request_router",

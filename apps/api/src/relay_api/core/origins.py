@@ -1,10 +1,6 @@
-"""Browser origins accepted by the API's write boundary."""
-
 from urllib.parse import urlsplit
 
-
 def origin_allowed(origin: str, configured_origin: str) -> bool:
-    """Allow the two local host names on one port; production remains exact-match."""
     if origin == configured_origin:
         return True
     try:

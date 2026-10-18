@@ -1,5 +1,3 @@
-"""The only component allowed to submit a confirmed support-case action."""
-
 from copy import deepcopy
 import time
 from typing import TYPE_CHECKING
@@ -9,7 +7,6 @@ from relay_api.infrastructure.storage import uid
 
 if TYPE_CHECKING:
     from relay_api.application.workflows import ResolutionService
-
 
 class CaseActions:
     def __init__(self, workflow: "ResolutionService") -> None:

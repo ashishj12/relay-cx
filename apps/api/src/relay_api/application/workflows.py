@@ -1,5 +1,3 @@
-"""Single controlled orchestrator with persistent, two-phase actions."""
-
 import os
 from copy import deepcopy
 import re
@@ -26,8 +24,6 @@ TRANSITIONS = {
     "EXECUTING_ACTION": {"VERIFYING_ACTION", "ESCALATED"},
     "VERIFYING_ACTION": {"RESOLVED", "ESCALATED"},
 }
-
-
 class ResolutionService:
     def overview(self, session):
         """An independent authorized read; never changes an in-flight chat/action."""

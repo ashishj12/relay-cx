@@ -1,5 +1,3 @@
-"""ASGI transport. Business workflows and deterministic security live in the service layer."""
-
 from contextlib import asynccontextmanager
 import os
 import time

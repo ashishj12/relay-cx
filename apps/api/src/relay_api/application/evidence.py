@@ -1,18 +1,12 @@
-"""Read-only business operations shared by ADK tools and offline evaluation."""
-
 from dataclasses import dataclass
 from typing import Any
 
 from relay_api.domain.models import Interpretation
 from relay_api.infrastructure.enterprise import Gateway, IntegrationError
-
-
 @dataclass(frozen=True)
 class EvidenceBundle:
     facts: list[str]
     conflict: str | None = None
-
-
 class EnterpriseEvidence:
     def __init__(self, gateway: Gateway) -> None:
         self.gateway = gateway
