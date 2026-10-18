@@ -1,46 +1,59 @@
 # Relay CX
 
-Relay CX is a small telecom support app for local demos and internal review work. It gives a customer-facing experience, a support workflow, and a simple way to check account and service cases without needing a heavy setup.
+Relay CX is a controlled telecom customer-resolution demo built around a FastAPI backend, a Next.js frontend, and synthetic enterprise integrations. The app models a support workflow where a customer can sign in, ask about billing or service issues, and have a governed AI-assisted resolution flow review account, service, and case data before an action is confirmed.
 
-The project is built around a straightforward flow: a person asks about an account, billing, or service issue, the app gathers the relevant details, and the workflow helps review the case and decide the next step.
+This repository is designed for local development, evaluation, and challenge-based review. It is intentionally bounded: synthetic authentication, mock enterprise services, and local SQLite storage are used instead of full production infrastructure.
 
-This repo is meant to be easy to run locally, quick to explore, and simple to understand.
+## What this project includes
 
-## What is in this project
+- Customer workflow for account and service review
+- Support/reviewer access with scoped operational views
+- AI-assisted resolution flow using Google ADK and Gemini
+- Mock telecom enterprise adapters for billing, account, and service data
+- Structured events, traces, and scenario-based verification
+- Docker Compose + local runner for quick setup
 
-- Customer and support views for looking at account and service issues
-- Review flows for checking case details and next steps
-- Synthetic telecom data for local testing and demos
-- A small API and frontend stacked together for a complete local app
-- Simple project tooling for running the service and validating the repo
+## Core architecture
+
+The repo is split into a few clear components:
+
+- apps/web: Next.js customer/support UI
+- apps/api: FastAPI service and workflow orchestration layer
+- services/mock-telecom: synthetic telecom backend used by the app
+- resources/challenge: challenge artifacts, scenario fixtures, and evaluation inputs
+- tests: acceptance, contract, integration, and security checks
+- tools: local dev and validation scripts
+- docs: architecture, security, and Gemini mapping references
 
 ## Typical workflow
 
-1. A user signs in as a customer or reviewer.
-2. The app loads account, billing, or service context.
-3. The flow checks the relevant information and business rules.
-4. The case is reviewed, confirmed, or passed along for the next step.
-5. The results can be inspected in the app and through the repo checks.
+1. A customer or support user signs in.
+2. The backend validates the session and account context.
+3. The AI workflow reads only session-bound, authorized data.
+4. The app proposes an action or next step.
+5. A confirmation endpoint enforces an explicit approval step before a case write is executed.
+6. Events and traces are stored for review and scenario validation.
 
 ## Demo users
 
-The project includes a few built-in demo accounts for local testing:
+The project includes synthetic demo accounts for local testing:
 
 - Alex Morgan — `alex.morgan` / `ReviewerPass-1001`
 - Jordan Lee — `jordan.lee` / `ReviewerPass-1002`
 - Support agent — `support.agent` / `ReviewerPass-3001`
 
-These are synthetic demo credentials intended only for local development.
+These credentials are intentionally fake and meant only for local challenge/demo usage.
 
-## Quick start
-
-### Prerequisites
+## Prerequisites
 
 - Python 3.11+
 - Bun 1.3.14+
-- Internet access for installing dependencies
+- Internet access for dependency installation
+- Docker (optional, for Compose-based local stack)
 
-### Install and run locally
+## Local development quick start
+
+From the repository root:
 
 PowerShell:
 
@@ -62,48 +75,63 @@ cp .env.example .env
 .venv/bin/python tools/dev.py
 ```
 
-Then open:
+The launcher starts the API and mock telecom services together with the web app. After startup, open:
 
-- Frontend: http://localhost:3000
+- Web app: http://127.0.0.1:3000
 - API docs: http://127.0.0.1:8080/docs
 
-The development launcher starts the app stack for local use. Press Ctrl+C to stop it.
+Press Ctrl+C in the launcher terminal to stop the stack.
 
 ## Environment configuration
 
-The root `.env` file is ignored by Git and stores local settings. The example file is already included at [.env.example](.env.example).
+The repository includes a local example file at [.env.example](.env.example). Copy it to `.env` for local settings. The file is intentionally excluded from source control.
 
-Common values include:
+Common variables include:
 
-- `PUBLIC_ORIGIN` — the browser origin used by the app
-- `DATABASE_PATH` — local SQLite database path
-- `ENTERPRISE_API_BASE_URL` — telecom mock service base URL
+- `APP_MODE` — request mode, typically `REVIEWER`
+- `PUBLIC_ORIGIN` — browser origin for the frontend
+- `DATABASE_PATH` — path to the local SQLite database
+- `ENTERPRISE_API_BASE_URL` — mock enterprise service URL
+- `GEMINI_API_KEY` — API key for Gemini-backed workflow calls
+- `COOKIE_SECURE` — set to `true` when serving behind HTTPS
 
-## Project structure
+## Docker Compose
+
+To start the full stack with Docker:
+
+```bash
+docker compose up --build
+```
+
+This runs the frontend, the API, and the synthetic telecom service together. The app data is stored in the `cx-data` Docker volume. To stop the stack:
+
+```bash
+docker compose down
+```
+
+For operational guidance, see [deployment/README.md](deployment/README.md).
+
+## Repository layout
 
 ```text
 apps/
-  web/                 Frontend app for the customer and review flows
-  api/
-    src/relay_api/
-      domain/          Core models and business data
-      application/     Workflow logic and case handling
-      infrastructure/  Data adapters and persistence logic
-      http/            API endpoints and transport layer
-      evaluation/      Scenario and acceptance checks
-      core/            Configuration and app setup
-services/mock-telecom/  Synthetic telecom service used for local testing
-resources/challenge/    Challenge assets, fixtures, and starter material
-tests/                 Acceptance, contract, and integration tests
-tools/                 Local dev, validation, and release utilities
-deployment/            Docker and deployment assets
-docs/                  Architecture and project documentation
-evidence/current/      Generated verification output for this build
+  api/                 FastAPI backend and workflow orchestration
+    src/relay_api/     API application, domain logic, adapters, and agents
+  web/                 Next.js frontend for customer and support flows
+services/
+  mock-telecom/        Synthetic telecom service used by the app
+resources/
+  challenge/           Scenario fixtures, supplied contracts, and challenge assets
+tests/                Acceptance, contract, integration, and security tests
+tools/                Local dev, validation, and release scripts
+docs/                 Architecture and security documentation
+deployment/          Docker and reference deployment guidance
+evidence/current/    Generated verification and test artifacts
 ```
 
-## Validation and checks
+## Validation
 
-Run the checks from the repo root:
+Run the project checks from the repo root:
 
 ```powershell
 .venv\Scripts\python.exe -m pytest -q --junitxml=evidence/current/pytest.xml
@@ -113,37 +141,22 @@ bun run build
 .venv\Scripts\python.exe tools/compliance_audit.py
 ```
 
-You can also use the repo tools for deeper review and release packaging if needed.
-
-## Docker and local deployment
-
-Start the full stack with Docker:
-
-```bash
-docker compose up --build
-```
-
-This starts the frontend, API, and synthetic telecom service together. Data is stored in the `cx-data` volume. Use `docker compose down` when you are finished.
-
-For deployment guidance, see [deployment/README.md](deployment/README.md).
+These checks cover API behavior, frontend type safety, and repo-level verification. The repo also contains scenario and integration tests for security and workflow correctness.
 
 ## Documentation
 
-The repo includes more detailed project guidance here:
+This repository includes the main project references:
 
 - [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
 - [docs/SECURITY.md](docs/SECURITY.md)
-- [docs/HANDOVER.md](docs/HANDOVER.md)
-- [docs/CHANGES.md](docs/CHANGES.md)
-- [docs/FINAL_COMPLIANCE_AUDIT.md](docs/FINAL_COMPLIANCE_AUDIT.md)
-- [docs/relay-ui-guide.pdf](docs/relay-ui-guide.pdf)
+- [docs/GEMINI_CX_MAPPING.md](docs/GEMINI_CX_MAPPING.md)
+- [docs/GEMINI_INVOCATIONS.md](docs/GEMINI_INVOCATIONS.md)
+- [deployment/README.md](deployment/README.md)
 
-## Notes
+## Important caveat
 
-- This project uses synthetic telecom and authentication data for local development and evaluation.
-- It is intended for a controlled local challenge environment and is not a full public-facing service.
-- Local verification helps check the app behaves as expected in this repo setup.
+This project is a controlled challenge/demo environment, not a production public-facing telecom platform. It intentionally keeps trust boundaries narrow, uses synthetic credentials and mock enterprise fixtures, and requires additional production hardening before real-world deployment.
 
 ## Summary
 
-Relay CX is a simple telecom support demo that brings together a web app, API, review flows, and local test data in one project. It is meant to be understandable, easy to run, and useful for local validation and review work.
+Relay CX is a local, reviewable customer-resolution platform that combines a Next.js frontend, Google ADK/Gemini-backed workflow logic, and controlled enterprise adapters to model a realistic but safe telecom support scenario.
