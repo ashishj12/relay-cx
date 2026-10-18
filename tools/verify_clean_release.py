@@ -12,7 +12,6 @@ import zipfile
 ROOT = Path(__file__).resolve().parents[1]
 BASE_PYTHON = sys.executable
 
-
 def verify():
     output = ROOT / "evidence/current/clean-verification.json"
     work = ROOT / ".local" / ("clean-" + str(int(time.time())))
