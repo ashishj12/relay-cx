@@ -35,8 +35,31 @@ test("checks the public host instead of the internal Next.js bind address", () =
 });
 
 test("accepts TLS termination only for the explicitly configured public origin", () => {
-  expect(sameOrigin("https://relay.example", "relay.example", "http:", "https://relay.example")).toBe(true);
-  expect(sameOrigin("https://relay.example", "relay.example", "http:")).toBe(false);
-  expect(sameOrigin("https://evil.test", "evil.test", "http:", "https://relay.example")).toBe(false);
-  expect(sameOrigin("https://relay.example", "other.example", "http:", "https://relay.example")).toBe(false);
+  expect(
+    sameOrigin(
+      "https://relay.example",
+      "relay.example",
+      "http:",
+      "https://relay.example",
+    ),
+  ).toBe(true);
+  expect(sameOrigin("https://relay.example", "relay.example", "http:")).toBe(
+    false,
+  );
+  expect(
+    sameOrigin(
+      "https://evil.test",
+      "evil.test",
+      "http:",
+      "https://relay.example",
+    ),
+  ).toBe(false);
+  expect(
+    sameOrigin(
+      "https://relay.example",
+      "other.example",
+      "http:",
+      "https://relay.example",
+    ),
+  ).toBe(false);
 });
