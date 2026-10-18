@@ -1,5 +1,3 @@
-"""Source-referenced audit. PASS requires execution evidence, not file existence."""
-
 import csv
 import hashlib
 import json

@@ -1,5 +1,3 @@
-"""Terminate only subprocess trees created by this launcher (Windows venv redirectors)."""
-
 import os
 import subprocess
 

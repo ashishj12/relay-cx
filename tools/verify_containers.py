@@ -1,5 +1,3 @@
-"""Verify the running Compose stack through the public Next.js gateway."""
-
 import json
 from pathlib import Path
 import subprocess

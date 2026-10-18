@@ -1,5 +1,3 @@
-"""Create a source-only release with an allowlist, secret scan and content manifest."""
-
 import hashlib
 import json
 import os

@@ -1,8 +1,3 @@
-"""Create a short, bookmarked reference from actual browser captures.
-
-Requires reportlab and Pillow from an optional document environment, not the API.
-"""
-
 from pathlib import Path
 from reportlab.pdfgen import canvas
 from reportlab.lib.colors import HexColor

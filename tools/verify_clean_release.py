@@ -1,5 +1,3 @@
-"""Extract the source archive into an isolated folder and verify the documented setup."""
-
 import json
 import os
 from pathlib import Path

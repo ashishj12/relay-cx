@@ -1,5 +1,3 @@
-"""Start the complete local workspace; Ctrl+C stops only owned child processes."""
-
 import os
 import subprocess
 import shutil

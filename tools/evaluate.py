@@ -1,5 +1,3 @@
-"""Isolated real-HTTP evaluator. Starts both supplied services on ephemeral loopback ports."""
-
 import argparse
 import json
 import os
