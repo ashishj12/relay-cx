@@ -1,31 +1,100 @@
-# Google Cloud and local deployment
+# Relay CX deployment guide
 
-## Local containers
+This repo can run locally with Docker, and it also has a reference deployment pattern for Google Cloud.
 
-`docker compose up --build` starts Next.js on 127.0.0.1:3000, the private FastAPI service and private synthetic telecom fixtures. Only web is exposed. API runtime configuration injects Gemini credentials; no key is baked into an image. API state is persisted in the cx-data volume. `docker compose down` retains it.
+This is meant to be easy to follow. The main idea is simple:
+
+- local dev: run everything with Docker Compose
+- cloud reference: run the same containers on a VM with a persistent disk
+- keep secrets outside the repo
+- expose only the web app publicly
+- keep the API and mock telecom services private
+
+## Local deployment
+
+From the project root:
+
+```bash
+docker compose up --build
+```
+
+This starts:
+
+- the Next.js web app on http://127.0.0.1:3000
+- the FastAPI service
+- the synthetic telecom mock service
+
+The API keeps its data in the `cx-data` volume. When you are done:
+
+```bash
+docker compose down
+```
+
+If you need a local environment file, copy the example file first:
+
+```bash
+cp .env.example .env
+```
 
 ## Google Cloud reference deployment
 
-The durable single-process deployment target for this implementation is **Compute Engine with an ext4 persistent disk**, running these same three containers with Docker Compose. No Google resources have been created. This is a prepared deployment approach, not a claim of a running cloud service.
+This is a deployment pattern for a single VM, not a live cloud service already running.
 
-1. Create an Artifact Registry Docker repository and use `gcloud builds submit --config deployment/cloudbuild.yaml --substitutions=_REGION=REGION,_REPOSITORY=REPO` to build images. Substitute your project and region; review the build before running. No build needs a model secret.
-2. Provision a Linux Compute Engine VM with Docker/Compose installed, a dedicated service account, private enterprise networking and a separately attached persistent disk formatted ext4. Mount it at /srv/relay/data. Use Google's current disk mounting instructions. Do not place SQLite WAL databases on NFS or Cloud Storage mounts.
-3. Transfer this source release without .env. Replace Compose build entries with immutable Artifact Registry image digests. Bind /srv/relay/data to /app/data in the API container instead of the development named volume. Give UID 10001 ownership. Run **one API container/process**.
-4. Retrieve the Gemini key from Secret Manager using the VM's service account, with secretAccessor granted on that secret alone. Put runtime configuration in a root-readable file outside the checkout; use `docker compose --env-file /secure/path/relay.env up -d`. Protect Docker access; never log resolved Compose configuration containing secrets.
-5. Terminate TLS at a managed HTTPS load balancer or authenticated reverse proxy. Bind the local web port to loopback and route only the public frontend through it. Set PUBLIC_ORIGIN to the exact HTTPS hostname and COOKIE_SECURE=true. Keep the API and synthetic mock unexposed; restrict ingress and allow only required outbound Gemini/enterprise access. Configure health checks, resource limits and log retention.
-6. Configure consistent SQLite backups using SQLite's backup API, disk snapshots, restore drills and session retention. Ship redacted JSON events to Cloud Logging, alert on uncertain actions, fallback, authorization denials and tool failures. Use traceId for investigations.
-7. Validate all scenarios after deployment. Drain requests before replacing containers; retain completed and uncertain action markers during rollback. Reconcile any uncertain case with the enterprise system instead of replaying it. Track image digests and schema versions.
+The recommended target is:
 
-Cloud Run is an alternative **after** migrating SQLite to Cloud SQL and implementing transactional cross-instance action claims. A single-instance cap does not make an ephemeral filesystem durable. An authenticated private API gateway/identity-token integration is also required before splitting web/API across private Cloud Run services. These changes are not represented as complete.
+- Google Compute Engine VM
+- Docker Compose
+- ext4 persistent disk for SQLite data
+- Secret Manager for the Gemini key
+- HTTPS load balancer or private reverse proxy in front of the web app
 
-Synthetic authentication/mock telecom are for challenge qualification, not real customer use. Production federation, mTLS/IAM enterprise adapters, queue delivery, distributed rate limits and external penetration/load evaluation remain engineering work. The custom Gemini architecture and managed-service mapping are documented in docs/GEMINI_CX_MAPPING.md. The in-app Agent Studio is implemented; no managed Dialogflow CX, CX Agent Studio or Vertex deployment is claimed.
+### Basic flow
 
-Official references: https://cloud.google.com/compute/docs/disks/add-persistent-disk and https://cloud.google.com/compute/docs/containers/deploying-containers .
+1. Build container images with Artifact Registry and Cloud Build.
+2. Create a VM with Docker, Compose, and a service account.
+3. Mount a persistent disk at `/srv/relay/data`.
+4. Copy the release without `.env` values.
+5. Point Compose at the built images and store runtime config outside the repo.
+6. Keep the API and mock telecom private; only the web app should be public.
+7. Set `PUBLIC_ORIGIN` to the exact HTTPS hostname and enable `COOKIE_SECURE=true`.
+8. Set up backups, logging, health checks, and rollback steps.
 
-## Runtime configuration and operational limits
+### Important deployment notes
 
-`PUBLIC_ORIGIN` is the exact browser origin; configure forwarded scheme/host consistently at the TLS ingress. `COOKIE_SECURE=true` is required for HTTPS deployment. `/api/health` through Next.js is API liveness; the protected `/api/ops/health` additionally probes enterprise readiness. Provider readiness comes from actual AI events, not a health badge.
+- Use one API process and one SQLite database.
+- Store SQLite data on a real persistent disk, not on a shared or temporary filesystem.
+- Keep secrets in Secret Manager, not inside Docker images or config files in the repo.
+- Do not expose the internal mock services or the protected API directly.
+- Only the frontend should be reachable from outside.
 
-`REQUEST_TIMEOUT=2` seconds bounds each enterprise socket operation; `MAX_RETRIES=1` (clamped 0–2) applies only to safe reads/read-only diagnostic calls. Case creation and login are not retried. `AI_TIMEOUT=40` seconds bounds one model call, with one SDK attempt. Next.js allows up to 120 seconds for upstream workflows. These are transport timeouts, not a full slow-drip-safe workflow deadline. UI account verification is an independent read and does not change a pending chat/action.
+## Runtime settings
 
-Cost drivers are two model stages per informational request, VM uptime, persistent disk capacity/backups, network egress and structured-log retention. Reviewer has no model cost. Set Google Cloud budgets, provider quotas, bounded retention and alerts before operating; no cloud pricing estimate, token-cost report or paid deployment is claimed. Metrics scan persisted events and state mutations serialize in one API process, so throughput/load requirements must be measured before production sizing. Keep a consistent SQLite backup and completed action markers for rollback; never replay uncertain writes after restoring state.
+A few settings matter in production:
+
+- `PUBLIC_ORIGIN`: exact browser origin used by the app
+- `COOKIE_SECURE=true`: required for HTTPS
+- `REQUEST_TIMEOUT=2`: timeout for enterprise network calls
+- `MAX_RETRIES=1`: safe read-only retry limit
+- `AI_TIMEOUT=40`: model call timeout
+
+These are operational guardrails, not a full production platform design.
+
+## Operational checklist
+
+Before running this outside a demo or challenge environment, make sure you have:
+
+- backup and restore process for SQLite
+- monitoring and logs for failed AI or enterprise calls
+- alerts for auth failures, tool failures, and uncertain actions
+- budget and quota controls for Gemini usage
+- a clear rollback plan before replacing containers
+
+## Important caution
+
+This repository is designed for local challenge/demo work and controlled evaluation. It is not a complete production customer-facing system. Production features such as full identity federation, mTLS, external enterprise integration, queueing, and distributed scaling still need engineering work.
+
+For more detail, see:
+
+- [../docs/ARCHITECTURE.md](../docs/ARCHITECTURE.md)
+- [../docs/SECURITY.md](../docs/SECURITY.md)
+- [../docs/GEMINI_CX_MAPPING.md](../docs/GEMINI_CX_MAPPING.md)
