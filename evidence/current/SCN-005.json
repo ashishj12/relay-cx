@@ -1,0 +1,175 @@
+{
+  "scenarioId": "SCN-005",
+  "title": "Cross-customer access",
+  "status": "PASS",
+  "checks": {
+    "denied_before_read": true,
+    "authenticated_initial_identity": true,
+    "real_authentication_service": true,
+    "authentication_success_event": true,
+    "all_requests_traced": true,
+    "customer_record_isolation": true,
+    "no_unconfirmed_case_calls": true,
+    "final_state_0": true,
+    "matching_terminal_state_0": true,
+    "called_tools_have_results_0": true,
+    "no_protected_call_before_authorization_0": true,
+    "no_foreign_retrieval": true,
+    "denial_audited": true,
+    "no_success_or_case": true
+  },
+  "initialConditions": {
+    "customerId": "CUST-1001",
+    "accountId": "ACC-2001",
+    "mode": "REVIEWER"
+  },
+  "inputs": {
+    "scenarioId": "SCN-005",
+    "title": "Cross-customer access",
+    "authenticatedUser": "CUST-1001",
+    "requestedAccount": "ACC-2002",
+    "expectedOutcome": "Access denied",
+    "prohibited": "Any ACC-2002 protected data"
+  },
+  "command": "python tools/evaluate.py --mode REVIEWER",
+  "results": [
+    {
+      "traceId": "TRACE-1b3443adf1754c43ac20a815ff50138c",
+      "state": "FAILED",
+      "mode": "REVIEWER",
+      "facts": [],
+      "answer": "Account access denied."
+    }
+  ],
+  "traceIds": [
+    "TRACE-1b3443adf1754c43ac20a815ff50138c"
+  ],
+  "events": [
+    {
+      "eventId": "EVT-5bcc60072a004412b0dd84fc5d89d160",
+      "traceId": "TRACE-d3116667e3f5444a9f069032a273c9f6",
+      "sessionId": "anonymous",
+      "timestamp": "2026-10-18T08:19:12.847093+00:00",
+      "eventType": "authentication.attempted",
+      "component": "orchestrator",
+      "status": "pending",
+      "durationMs": 0,
+      "metadata": {}
+    },
+    {
+      "eventId": "EVT-78ef46eb09654dee9404e0b0161a8c64",
+      "traceId": "TRACE-d3116667e3f5444a9f069032a273c9f6",
+      "sessionId": "anonymous",
+      "timestamp": "2026-10-18T08:19:12.852915+00:00",
+      "eventType": "tool.invoked",
+      "component": "authentication",
+      "status": "success",
+      "durationMs": 0,
+      "metadata": {
+        "method": "POST",
+        "inputSummary": "credentials submitted to synthetic identity service",
+        "safeRetry": false
+      }
+    },
+    {
+      "eventId": "EVT-94f1164a6e0a433c98d1a5ee62ad70bc",
+      "traceId": "TRACE-d3116667e3f5444a9f069032a273c9f6",
+      "sessionId": "anonymous",
+      "timestamp": "2026-10-18T08:19:12.859198+00:00",
+      "eventType": "tool.finished",
+      "component": "authentication",
+      "status": "success",
+      "durationMs": 14.999999955762178,
+      "metadata": {
+        "outputSummary": {
+          "validated": true,
+          "recordType": "authentication",
+          "identityChecked": false
+        }
+      }
+    },
+    {
+      "eventId": "EVT-ef32125888cf406fb2beecdbbb374e8d",
+      "traceId": "TRACE-d3116667e3f5444a9f069032a273c9f6",
+      "sessionId": "bb180530eba410d512d23e8abdcfc22e71eb9ff2d2dad685885a76c4f0f8a7d7",
+      "timestamp": "2026-10-18T08:19:12.864485+00:00",
+      "eventType": "session.created",
+      "component": "orchestrator",
+      "status": "success",
+      "durationMs": 0,
+      "metadata": {}
+    },
+    {
+      "eventId": "EVT-21033a7e3d754e098958799f055e5be4",
+      "traceId": "TRACE-d3116667e3f5444a9f069032a273c9f6",
+      "sessionId": "bb180530eba410d512d23e8abdcfc22e71eb9ff2d2dad685885a76c4f0f8a7d7",
+      "timestamp": "2026-10-18T08:19:12.864485+00:00",
+      "eventType": "authentication.succeeded",
+      "component": "orchestrator",
+      "status": "success",
+      "durationMs": 0,
+      "metadata": {}
+    },
+    {
+      "eventId": "EVT-872326ae57f44d4980f5e7d429c5683b",
+      "traceId": "TRACE-1b3443adf1754c43ac20a815ff50138c",
+      "sessionId": "bb180530eba410d512d23e8abdcfc22e71eb9ff2d2dad685885a76c4f0f8a7d7",
+      "timestamp": "2026-10-18T08:19:12.864485+00:00",
+      "eventType": "request.received",
+      "component": "orchestrator",
+      "status": "success",
+      "durationMs": 0,
+      "metadata": {}
+    },
+    {
+      "eventId": "EVT-4f15f25369984a7fba4f1991bcab9566",
+      "traceId": "TRACE-1b3443adf1754c43ac20a815ff50138c",
+      "sessionId": "bb180530eba410d512d23e8abdcfc22e71eb9ff2d2dad685885a76c4f0f8a7d7",
+      "timestamp": "2026-10-18T08:19:12.864485+00:00",
+      "eventType": "workflow.transition",
+      "component": "orchestrator",
+      "status": "success",
+      "durationMs": 0,
+      "metadata": {
+        "previous": "NEW",
+        "current": "INTERPRETING"
+      }
+    },
+    {
+      "eventId": "EVT-1fd9d0707ced4ff29d99d10ad86f8142",
+      "traceId": "TRACE-1b3443adf1754c43ac20a815ff50138c",
+      "sessionId": "bb180530eba410d512d23e8abdcfc22e71eb9ff2d2dad685885a76c4f0f8a7d7",
+      "timestamp": "2026-10-18T08:19:12.864485+00:00",
+      "eventType": "authorization.denied",
+      "component": "orchestrator",
+      "status": "denied",
+      "durationMs": 0,
+      "metadata": {}
+    },
+    {
+      "eventId": "EVT-188d994d13d1402fbb4762c2b45b317b",
+      "traceId": "TRACE-1b3443adf1754c43ac20a815ff50138c",
+      "sessionId": "bb180530eba410d512d23e8abdcfc22e71eb9ff2d2dad685885a76c4f0f8a7d7",
+      "timestamp": "2026-10-18T08:19:12.889877+00:00",
+      "eventType": "workflow.failed",
+      "component": "orchestrator",
+      "status": "failure",
+      "durationMs": 0,
+      "metadata": {
+        "finalState": "FAILED"
+      }
+    },
+    {
+      "eventId": "EVT-5255f50f53bf4ca3b3e41cf2b82a60b2",
+      "traceId": "TRACE-1b3443adf1754c43ac20a815ff50138c",
+      "sessionId": "bb180530eba410d512d23e8abdcfc22e71eb9ff2d2dad685885a76c4f0f8a7d7",
+      "timestamp": "2026-10-18T08:19:12.890288+00:00",
+      "eventType": "request.finished",
+      "component": "orchestrator",
+      "status": "failure",
+      "durationMs": 32.00000000651926,
+      "metadata": {}
+    }
+  ],
+  "escalations": []
+}

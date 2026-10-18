@@ -1,0 +1,22 @@
+{
+  "status": "PASS",
+  "checkedAt": "2026-10-18T08:30:34.506378+00:00",
+  "backendTests": 91,
+  "frontendTests": 6,
+  "mandatoryScenarios": 8,
+  "scenarioAssertions": 160,
+  "liveRuntime": "google-adk",
+  "runtimeMatchesCleanVerification": true,
+  "evidence": {
+    "backend": "pytest.xml",
+    "scenarios": "http-scenarios.json",
+    "liveADK": "live-gemini-evidence.json",
+    "containers": "docker-verification.json",
+    "cleanInstall": "clean-verification.json",
+    "browser": "browser-verification.json",
+    "clientCredentialScan": "client-secret-scan.json"
+  },
+  "demoVideo": "EXCLUDED by user request",
+  "cloudDeployment": "PREPARED, NOT DEPLOYED",
+  "independentQualificationScore": null
+}

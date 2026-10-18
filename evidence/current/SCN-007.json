@@ -1,0 +1,576 @@
+{
+  "scenarioId": "SCN-007",
+  "title": "Case service unavailable",
+  "status": "PASS",
+  "checks": {
+    "confirmation_required": true,
+    "proposal_snapshot": true,
+    "safe_failure": true,
+    "authenticated_initial_identity": true,
+    "real_authentication_service": true,
+    "authentication_success_event": true,
+    "all_requests_traced": true,
+    "customer_record_isolation": true,
+    "no_unconfirmed_case_calls": true,
+    "final_state_0": true,
+    "matching_terminal_state_0": true,
+    "called_tools_have_results_0": true,
+    "no_protected_call_before_authorization_0": true,
+    "final_state_1": true,
+    "matching_terminal_state_1": true,
+    "called_tools_have_results_1": true,
+    "no_protected_call_before_authorization_1": true,
+    "proposal_confirmation_events": true,
+    "explicit_confirmation_before_call": true,
+    "one_consequential_call": true,
+    "durable_action_state": true,
+    "no_unsafe_case_retry": true,
+    "actual_http_503": true,
+    "actionable_handoff": true,
+    "failure_terminal_events": true
+  },
+  "initialConditions": {
+    "customerId": "CUST-1001",
+    "accountId": "ACC-2001",
+    "mode": "REVIEWER"
+  },
+  "inputs": {
+    "scenarioId": "SCN-007",
+    "title": "Case service unavailable",
+    "failure": {
+      "service": "case-management",
+      "mode": "503"
+    },
+    "expected": [
+      "Detect failure",
+      "No false success",
+      "Safe retry",
+      "Preserve context",
+      "Escalate or safe next step"
+    ]
+  },
+  "command": "python tools/evaluate.py --mode REVIEWER",
+  "results": [
+    {
+      "traceId": "TRACE-ba6229afaa914f6a9f73400c942a03db",
+      "state": "AWAITING_CONFIRMATION",
+      "mode": "REVIEWER",
+      "facts": [],
+      "answer": "Confirm creation of one support case for your account: Create a support case for my internet issue.",
+      "pendingAction": {
+        "id": "ACT-171cebe1581d4ea091a2dae3690e1693",
+        "summary": "Create a support case for my internet issue.",
+        "accountId": "ACC-2001",
+        "status": "pending",
+        "created": 1792311554.31316
+      }
+    },
+    {
+      "traceId": "TRACE-605d6f8e3c1c4d1e8745c6a14b562989",
+      "state": "ESCALATED",
+      "mode": "REVIEWER",
+      "facts": [],
+      "answer": "This request needs human review. No new successful action is claimed. Handoff ESC-def2e36c8f2f4ef8b2eb11a227a8540d",
+      "escalationId": "ESC-def2e36c8f2f4ef8b2eb11a227a8540d"
+    }
+  ],
+  "traceIds": [
+    "TRACE-ba6229afaa914f6a9f73400c942a03db",
+    "TRACE-605d6f8e3c1c4d1e8745c6a14b562989"
+  ],
+  "events": [
+    {
+      "eventId": "EVT-c69d05b10a5249cd940a5ee5f5b0c01f",
+      "traceId": "TRACE-531de3fc02a943729cd52f4821eb1b2f",
+      "sessionId": "anonymous",
+      "timestamp": "2026-10-18T08:19:14.214559+00:00",
+      "eventType": "authentication.attempted",
+      "component": "orchestrator",
+      "status": "pending",
+      "durationMs": 0,
+      "metadata": {}
+    },
+    {
+      "eventId": "EVT-7be8c34d1f4d408ca7f375fba67c061f",
+      "traceId": "TRACE-531de3fc02a943729cd52f4821eb1b2f",
+      "sessionId": "anonymous",
+      "timestamp": "2026-10-18T08:19:14.216314+00:00",
+      "eventType": "tool.invoked",
+      "component": "authentication",
+      "status": "success",
+      "durationMs": 0,
+      "metadata": {
+        "method": "POST",
+        "inputSummary": "credentials submitted to synthetic identity service",
+        "safeRetry": false
+      }
+    },
+    {
+      "eventId": "EVT-f63d0cde4d604deea83a549bcdb3e472",
+      "traceId": "TRACE-531de3fc02a943729cd52f4821eb1b2f",
+      "sessionId": "anonymous",
+      "timestamp": "2026-10-18T08:19:14.224872+00:00",
+      "eventType": "tool.finished",
+      "component": "authentication",
+      "status": "success",
+      "durationMs": 0,
+      "metadata": {
+        "outputSummary": {
+          "validated": true,
+          "recordType": "authentication",
+          "identityChecked": false
+        }
+      }
+    },
+    {
+      "eventId": "EVT-54156df233c04f68a4c1d23b8d1b7906",
+      "traceId": "TRACE-531de3fc02a943729cd52f4821eb1b2f",
+      "sessionId": "7ca28c51dabb1a98950eaa23cbd0b315ac5b0d84246b6f539b7e70fb2c7a6fa6",
+      "timestamp": "2026-10-18T08:19:14.233016+00:00",
+      "eventType": "session.created",
+      "component": "orchestrator",
+      "status": "success",
+      "durationMs": 0,
+      "metadata": {}
+    },
+    {
+      "eventId": "EVT-ebae321a92ff4ccabc94b7816e0f1d1b",
+      "traceId": "TRACE-531de3fc02a943729cd52f4821eb1b2f",
+      "sessionId": "7ca28c51dabb1a98950eaa23cbd0b315ac5b0d84246b6f539b7e70fb2c7a6fa6",
+      "timestamp": "2026-10-18T08:19:14.233016+00:00",
+      "eventType": "authentication.succeeded",
+      "component": "orchestrator",
+      "status": "success",
+      "durationMs": 0,
+      "metadata": {}
+    },
+    {
+      "eventId": "EVT-1c638c4283c94e219395879e1ca2c09d",
+      "traceId": "TRACE-ba6229afaa914f6a9f73400c942a03db",
+      "sessionId": "7ca28c51dabb1a98950eaa23cbd0b315ac5b0d84246b6f539b7e70fb2c7a6fa6",
+      "timestamp": "2026-10-18T08:19:14.233016+00:00",
+      "eventType": "request.received",
+      "component": "orchestrator",
+      "status": "success",
+      "durationMs": 0,
+      "metadata": {}
+    },
+    {
+      "eventId": "EVT-6da4d50414c449439b652aa3d58fe2c0",
+      "traceId": "TRACE-ba6229afaa914f6a9f73400c942a03db",
+      "sessionId": "7ca28c51dabb1a98950eaa23cbd0b315ac5b0d84246b6f539b7e70fb2c7a6fa6",
+      "timestamp": "2026-10-18T08:19:14.239963+00:00",
+      "eventType": "workflow.transition",
+      "component": "orchestrator",
+      "status": "success",
+      "durationMs": 0,
+      "metadata": {
+        "previous": "NEW",
+        "current": "INTERPRETING"
+      }
+    },
+    {
+      "eventId": "EVT-7387361cdc89404280463c58b198cbbe",
+      "traceId": "TRACE-ba6229afaa914f6a9f73400c942a03db",
+      "sessionId": "7ca28c51dabb1a98950eaa23cbd0b315ac5b0d84246b6f539b7e70fb2c7a6fa6",
+      "timestamp": "2026-10-18T08:19:14.241500+00:00",
+      "eventType": "agent.invoked",
+      "component": "reviewer",
+      "status": "success",
+      "durationMs": 0,
+      "metadata": {
+        "operation": "interpret",
+        "framework": "deterministic"
+      }
+    },
+    {
+      "eventId": "EVT-be9fc7a19b264470975456e059e3ab66",
+      "traceId": "TRACE-ba6229afaa914f6a9f73400c942a03db",
+      "sessionId": "7ca28c51dabb1a98950eaa23cbd0b315ac5b0d84246b6f539b7e70fb2c7a6fa6",
+      "timestamp": "2026-10-18T08:19:14.241500+00:00",
+      "eventType": "intent.classified",
+      "component": "orchestrator",
+      "status": "success",
+      "durationMs": 0,
+      "metadata": {
+        "intent": "case",
+        "service": "home-internet",
+        "confidence": 1.0,
+        "mode": "REVIEWER"
+      }
+    },
+    {
+      "eventId": "EVT-5f841eefcd2e4763b279d9d2b66cc62e",
+      "traceId": "TRACE-ba6229afaa914f6a9f73400c942a03db",
+      "sessionId": "7ca28c51dabb1a98950eaa23cbd0b315ac5b0d84246b6f539b7e70fb2c7a6fa6",
+      "timestamp": "2026-10-18T08:19:14.248944+00:00",
+      "eventType": "workflow.transition",
+      "component": "orchestrator",
+      "status": "success",
+      "durationMs": 0,
+      "metadata": {
+        "previous": "INTERPRETING",
+        "current": "AUTHORIZATION_CHECK"
+      }
+    },
+    {
+      "eventId": "EVT-4800524f4a724f698c6610799eac3240",
+      "traceId": "TRACE-ba6229afaa914f6a9f73400c942a03db",
+      "sessionId": "7ca28c51dabb1a98950eaa23cbd0b315ac5b0d84246b6f539b7e70fb2c7a6fa6",
+      "timestamp": "2026-10-18T08:19:14.250969+00:00",
+      "eventType": "authorization.allowed",
+      "component": "orchestrator",
+      "status": "success",
+      "durationMs": 0,
+      "metadata": {}
+    },
+    {
+      "eventId": "EVT-dcb99e9a06154c5d89b807ee0e05358c",
+      "traceId": "TRACE-ba6229afaa914f6a9f73400c942a03db",
+      "sessionId": "7ca28c51dabb1a98950eaa23cbd0b315ac5b0d84246b6f539b7e70fb2c7a6fa6",
+      "timestamp": "2026-10-18T08:19:14.252982+00:00",
+      "eventType": "workflow.transition",
+      "component": "orchestrator",
+      "status": "success",
+      "durationMs": 0,
+      "metadata": {
+        "previous": "AUTHORIZATION_CHECK",
+        "current": "FETCHING_ENTERPRISE_DATA"
+      }
+    },
+    {
+      "eventId": "EVT-9ef191e874504fa18b0f32e3a3008d34",
+      "traceId": "TRACE-ba6229afaa914f6a9f73400c942a03db",
+      "sessionId": "7ca28c51dabb1a98950eaa23cbd0b315ac5b0d84246b6f539b7e70fb2c7a6fa6",
+      "timestamp": "2026-10-18T08:19:14.256613+00:00",
+      "eventType": "authorization.allowed",
+      "component": "orchestrator",
+      "status": "success",
+      "durationMs": 0,
+      "metadata": {}
+    },
+    {
+      "eventId": "EVT-949203a075ab45f583163b83676eac6b",
+      "traceId": "TRACE-ba6229afaa914f6a9f73400c942a03db",
+      "sessionId": "7ca28c51dabb1a98950eaa23cbd0b315ac5b0d84246b6f539b7e70fb2c7a6fa6",
+      "timestamp": "2026-10-18T08:19:14.258957+00:00",
+      "eventType": "tool.invoked",
+      "component": "customer-profile",
+      "status": "success",
+      "durationMs": 0,
+      "metadata": {
+        "method": "GET",
+        "inputSummary": "validated session-scoped parameters",
+        "safeRetry": true
+      }
+    },
+    {
+      "eventId": "EVT-0916c6ffa5e5424c819cd2381a458033",
+      "traceId": "TRACE-ba6229afaa914f6a9f73400c942a03db",
+      "sessionId": "7ca28c51dabb1a98950eaa23cbd0b315ac5b0d84246b6f539b7e70fb2c7a6fa6",
+      "timestamp": "2026-10-18T08:19:14.275552+00:00",
+      "eventType": "tool.finished",
+      "component": "customer-profile",
+      "status": "success",
+      "durationMs": 16.00000000325963,
+      "metadata": {
+        "outputSummary": {
+          "validated": true,
+          "recordType": "customer-profile",
+          "identityChecked": true
+        }
+      }
+    },
+    {
+      "eventId": "EVT-dd2a579792914d90a4862c62899db382",
+      "traceId": "TRACE-ba6229afaa914f6a9f73400c942a03db",
+      "sessionId": "7ca28c51dabb1a98950eaa23cbd0b315ac5b0d84246b6f539b7e70fb2c7a6fa6",
+      "timestamp": "2026-10-18T08:19:14.281360+00:00",
+      "eventType": "authorization.allowed",
+      "component": "orchestrator",
+      "status": "success",
+      "durationMs": 0,
+      "metadata": {}
+    },
+    {
+      "eventId": "EVT-b7654d0d542041c88187ef375eea53a3",
+      "traceId": "TRACE-ba6229afaa914f6a9f73400c942a03db",
+      "sessionId": "7ca28c51dabb1a98950eaa23cbd0b315ac5b0d84246b6f539b7e70fb2c7a6fa6",
+      "timestamp": "2026-10-18T08:19:14.283379+00:00",
+      "eventType": "authorization.allowed",
+      "component": "orchestrator",
+      "status": "success",
+      "durationMs": 0,
+      "metadata": {}
+    },
+    {
+      "eventId": "EVT-befce91b582a42db88dcaa4f1ab8ffec",
+      "traceId": "TRACE-ba6229afaa914f6a9f73400c942a03db",
+      "sessionId": "7ca28c51dabb1a98950eaa23cbd0b315ac5b0d84246b6f539b7e70fb2c7a6fa6",
+      "timestamp": "2026-10-18T08:19:14.285398+00:00",
+      "eventType": "tool.invoked",
+      "component": "account-service",
+      "status": "success",
+      "durationMs": 0,
+      "metadata": {
+        "method": "GET",
+        "inputSummary": "validated session-scoped parameters",
+        "safeRetry": true
+      }
+    },
+    {
+      "eventId": "EVT-bf0ee6d130af46f4982b1a3105529821",
+      "traceId": "TRACE-ba6229afaa914f6a9f73400c942a03db",
+      "sessionId": "7ca28c51dabb1a98950eaa23cbd0b315ac5b0d84246b6f539b7e70fb2c7a6fa6",
+      "timestamp": "2026-10-18T08:19:14.313159+00:00",
+      "eventType": "tool.finished",
+      "component": "account-service",
+      "status": "success",
+      "durationMs": 32.00000000651926,
+      "metadata": {
+        "outputSummary": {
+          "validated": true,
+          "recordType": "account-service",
+          "identityChecked": true
+        }
+      }
+    },
+    {
+      "eventId": "EVT-103b05789c4c4582a75ecc2ad7f0cf13",
+      "traceId": "TRACE-ba6229afaa914f6a9f73400c942a03db",
+      "sessionId": "7ca28c51dabb1a98950eaa23cbd0b315ac5b0d84246b6f539b7e70fb2c7a6fa6",
+      "timestamp": "2026-10-18T08:19:14.313159+00:00",
+      "eventType": "workflow.transition",
+      "component": "orchestrator",
+      "status": "success",
+      "durationMs": 0,
+      "metadata": {
+        "previous": "FETCHING_ENTERPRISE_DATA",
+        "current": "AWAITING_CONFIRMATION"
+      }
+    },
+    {
+      "eventId": "EVT-0fa9c875f5b94173b90b894631dd29f5",
+      "traceId": "TRACE-ba6229afaa914f6a9f73400c942a03db",
+      "sessionId": "7ca28c51dabb1a98950eaa23cbd0b315ac5b0d84246b6f539b7e70fb2c7a6fa6",
+      "timestamp": "2026-10-18T08:19:14.323495+00:00",
+      "eventType": "action.proposed",
+      "component": "orchestrator",
+      "status": "pending",
+      "durationMs": 0,
+      "metadata": {
+        "actionId": "ACT-171cebe1581d4ea091a2dae3690e1693"
+      }
+    },
+    {
+      "eventId": "EVT-3981a5883039434d803c6f06c1189f01",
+      "traceId": "TRACE-ba6229afaa914f6a9f73400c942a03db",
+      "sessionId": "7ca28c51dabb1a98950eaa23cbd0b315ac5b0d84246b6f539b7e70fb2c7a6fa6",
+      "timestamp": "2026-10-18T08:19:14.325067+00:00",
+      "eventType": "confirmation.requested",
+      "component": "orchestrator",
+      "status": "pending",
+      "durationMs": 0,
+      "metadata": {
+        "actionId": "ACT-171cebe1581d4ea091a2dae3690e1693"
+      }
+    },
+    {
+      "eventId": "EVT-65d56cc74c0c4f5eae9bdd249724c293",
+      "traceId": "TRACE-ba6229afaa914f6a9f73400c942a03db",
+      "sessionId": "7ca28c51dabb1a98950eaa23cbd0b315ac5b0d84246b6f539b7e70fb2c7a6fa6",
+      "timestamp": "2026-10-18T08:19:14.353345+00:00",
+      "eventType": "request.finished",
+      "component": "orchestrator",
+      "status": "success",
+      "durationMs": 110.00000004423782,
+      "metadata": {}
+    },
+    {
+      "eventId": "EVT-b775450de6dc4a53a967fede6c25e1d5",
+      "traceId": "TRACE-605d6f8e3c1c4d1e8745c6a14b562989",
+      "sessionId": "7ca28c51dabb1a98950eaa23cbd0b315ac5b0d84246b6f539b7e70fb2c7a6fa6",
+      "timestamp": "2026-10-18T08:19:14.353345+00:00",
+      "eventType": "request.received",
+      "component": "orchestrator",
+      "status": "success",
+      "durationMs": 0,
+      "metadata": {}
+    },
+    {
+      "eventId": "EVT-30edae9f2c1d40728ca48b5aacf2f27b",
+      "traceId": "TRACE-605d6f8e3c1c4d1e8745c6a14b562989",
+      "sessionId": "7ca28c51dabb1a98950eaa23cbd0b315ac5b0d84246b6f539b7e70fb2c7a6fa6",
+      "timestamp": "2026-10-18T08:19:14.357083+00:00",
+      "eventType": "workflow.transition",
+      "component": "orchestrator",
+      "status": "success",
+      "durationMs": 0,
+      "metadata": {
+        "previous": "NEW",
+        "current": "AUTHORIZATION_CHECK"
+      }
+    },
+    {
+      "eventId": "EVT-6d4de15a528f4584ab87f2f9342ec2d7",
+      "traceId": "TRACE-605d6f8e3c1c4d1e8745c6a14b562989",
+      "sessionId": "7ca28c51dabb1a98950eaa23cbd0b315ac5b0d84246b6f539b7e70fb2c7a6fa6",
+      "timestamp": "2026-10-18T08:19:14.357083+00:00",
+      "eventType": "authorization.allowed",
+      "component": "orchestrator",
+      "status": "success",
+      "durationMs": 0,
+      "metadata": {}
+    },
+    {
+      "eventId": "EVT-7c4ea16a43b04e8699cf99e35d8f77a5",
+      "traceId": "TRACE-605d6f8e3c1c4d1e8745c6a14b562989",
+      "sessionId": "7ca28c51dabb1a98950eaa23cbd0b315ac5b0d84246b6f539b7e70fb2c7a6fa6",
+      "timestamp": "2026-10-18T08:19:14.374544+00:00",
+      "eventType": "confirmation.received",
+      "component": "orchestrator",
+      "status": "success",
+      "durationMs": 0,
+      "metadata": {
+        "actionId": "ACT-171cebe1581d4ea091a2dae3690e1693",
+        "confirmed": true,
+        "replay": false
+      }
+    },
+    {
+      "eventId": "EVT-5aebd69816b940b1813e0ca94f4ce2eb",
+      "traceId": "TRACE-605d6f8e3c1c4d1e8745c6a14b562989",
+      "sessionId": "7ca28c51dabb1a98950eaa23cbd0b315ac5b0d84246b6f539b7e70fb2c7a6fa6",
+      "timestamp": "2026-10-18T08:19:14.374544+00:00",
+      "eventType": "workflow.transition",
+      "component": "orchestrator",
+      "status": "success",
+      "durationMs": 0,
+      "metadata": {
+        "previous": "AUTHORIZATION_CHECK",
+        "current": "EXECUTING_ACTION"
+      }
+    },
+    {
+      "eventId": "EVT-97ebccfd741d4d68bbb6535d8fd4bae5",
+      "traceId": "TRACE-605d6f8e3c1c4d1e8745c6a14b562989",
+      "sessionId": "7ca28c51dabb1a98950eaa23cbd0b315ac5b0d84246b6f539b7e70fb2c7a6fa6",
+      "timestamp": "2026-10-18T08:19:14.385208+00:00",
+      "eventType": "authorization.allowed",
+      "component": "orchestrator",
+      "status": "success",
+      "durationMs": 0,
+      "metadata": {}
+    },
+    {
+      "eventId": "EVT-412a12b201414284b648f1b422216ffd",
+      "traceId": "TRACE-605d6f8e3c1c4d1e8745c6a14b562989",
+      "sessionId": "7ca28c51dabb1a98950eaa23cbd0b315ac5b0d84246b6f539b7e70fb2c7a6fa6",
+      "timestamp": "2026-10-18T08:19:14.394885+00:00",
+      "eventType": "tool.invoked",
+      "component": "case-management",
+      "status": "success",
+      "durationMs": 0,
+      "metadata": {
+        "method": "POST",
+        "inputSummary": "validated session-scoped parameters",
+        "safeRetry": false
+      }
+    },
+    {
+      "eventId": "EVT-86072f2ad46e4add91b017084bf814b3",
+      "traceId": "TRACE-605d6f8e3c1c4d1e8745c6a14b562989",
+      "sessionId": "7ca28c51dabb1a98950eaa23cbd0b315ac5b0d84246b6f539b7e70fb2c7a6fa6",
+      "timestamp": "2026-10-18T08:19:14.407681+00:00",
+      "eventType": "tool.finished",
+      "component": "case-management",
+      "status": "failure",
+      "durationMs": 15.000000013969839,
+      "metadata": {
+        "reason": "http_503"
+      }
+    },
+    {
+      "eventId": "EVT-9258721f4c6446e496874dbbacc3ccd8",
+      "traceId": "TRACE-605d6f8e3c1c4d1e8745c6a14b562989",
+      "sessionId": "7ca28c51dabb1a98950eaa23cbd0b315ac5b0d84246b6f539b7e70fb2c7a6fa6",
+      "timestamp": "2026-10-18T08:19:14.429798+00:00",
+      "eventType": "workflow.transition",
+      "component": "orchestrator",
+      "status": "success",
+      "durationMs": 0,
+      "metadata": {
+        "previous": "EXECUTING_ACTION",
+        "current": "ESCALATED"
+      }
+    },
+    {
+      "eventId": "EVT-46389743caea4ae09f2e10ab49e59376",
+      "traceId": "TRACE-605d6f8e3c1c4d1e8745c6a14b562989",
+      "sessionId": "7ca28c51dabb1a98950eaa23cbd0b315ac5b0d84246b6f539b7e70fb2c7a6fa6",
+      "timestamp": "2026-10-18T08:19:14.429798+00:00",
+      "eventType": "workflow.escalated",
+      "component": "orchestrator",
+      "status": "success",
+      "durationMs": 0,
+      "metadata": {}
+    },
+    {
+      "eventId": "EVT-d5b5345073284f4db963d5b48f561cc7",
+      "traceId": "TRACE-605d6f8e3c1c4d1e8745c6a14b562989",
+      "sessionId": "7ca28c51dabb1a98950eaa23cbd0b315ac5b0d84246b6f539b7e70fb2c7a6fa6",
+      "timestamp": "2026-10-18T08:19:14.440860+00:00",
+      "eventType": "workflow.failed",
+      "component": "orchestrator",
+      "status": "failure",
+      "durationMs": 0,
+      "metadata": {
+        "finalState": "ESCALATED"
+      }
+    },
+    {
+      "eventId": "EVT-bf3a1fe8779945f29ee7a1a5553ce9cc",
+      "traceId": "TRACE-605d6f8e3c1c4d1e8745c6a14b562989",
+      "sessionId": "7ca28c51dabb1a98950eaa23cbd0b315ac5b0d84246b6f539b7e70fb2c7a6fa6",
+      "timestamp": "2026-10-18T08:19:14.440860+00:00",
+      "eventType": "request.finished",
+      "component": "orchestrator",
+      "status": "failure",
+      "durationMs": 93.99999998277053,
+      "metadata": {}
+    }
+  ],
+  "escalations": [
+    {
+      "escalationId": "ESC-def2e36c8f2f4ef8b2eb11a227a8540d",
+      "traceId": "TRACE-605d6f8e3c1c4d1e8745c6a14b562989",
+      "customerId": "CUST-1001",
+      "requestSummary": "Create a support case for my internet issue.",
+      "completedSteps": [
+        "customer-profile",
+        "account-service"
+      ],
+      "reason": "case-management:http_503",
+      "recommendedNextStep": "Human support should inspect verified facts and integration status; reconcile uncertain actions before retrying.",
+      "pendingAction": {
+        "id": "ACT-171cebe1581d4ea091a2dae3690e1693",
+        "summary": "Create a support case for my internet issue.",
+        "accountId": "ACC-2001",
+        "status": "uncertain",
+        "created": 1792311554.31316,
+        "confirmedAt": 1792311554.3745444
+      },
+      "facts": [],
+      "verifiedContext": {
+        "accountId": "ACC-2001",
+        "identitySource": "synthetic-authentication-service"
+      },
+      "failedTools": [
+        {
+          "component": "case-management",
+          "reason": "http_503"
+        }
+      ]
+    }
+  ]
+}
