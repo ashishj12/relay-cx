@@ -1,5 +1,3 @@
-"""Create an online-consistent SQLite snapshot without overwriting an existing backup."""
-
 import argparse
 import os
 from pathlib import Path

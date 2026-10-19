@@ -1,9 +1,33 @@
-# Enterprise authentication extension
+# How sign-in works in the sample company services
 
-The original supplied OpenAPI and XML contracts remain unchanged under resources/challenge. The runnable synthetic service adds bearer authentication and record-ownership checks around those same paths. `/health` and `/api/auth/login` are the only unauthenticated endpoints. A successful synthetic login returns an opaque random `accessToken` with a bounded lifetime. Protected JSON and XML calls require `Authorization: Bearer <token>`; missing/expired tokens return 401 and foreign account/customer/service/postal-code scopes return 403.
+The sample company services require a sign-in token before they return account,
+billing, or service information. The token is a short-lived proof that the
+sample user has signed in.
 
-The gateway retains this token only in server-side session storage and sends it in headers to the configured fixed enterprise origin. It never becomes a model argument, browser field or trace value. Bearer/header failures are sanitized categories. The browser receives a separate opaque cookie, indexed server-side by its SHA-256 digest. The profile response excludes testPassword, username and email.
+Only the sample health check and sign-in endpoint work without a token. A
+missing or expired token is rejected. A request for another customer's record
+is also rejected.
 
-Synthetic bearer/case stores are intentionally in process memory; restarting the mock invalidates bearer sessions and loses its case index. API action state remains durable; an interrupted or uncertain write cannot automatically reissue even after restart. Log in again after a mock restart. A real deployment needs federated identity, renewable scoped credentials, TLS/private transport and durable upstream idempotency/reconciliation.
+The backend keeps the sample-company token on the server. It is not sent to
+the browser or to Gemini. The browser gets a separate session cookie. The
+profile shown in the browser does not include the sample password or login
+details.
 
-Regression tests: `test_enterprise_requires_bearer_and_enforces_ownership`, `test_enterprise_token_never_reaches_browser_or_events`, `test_upstream_revocation_preserves_safe_handoff` in tests/integration/test_release_hardening.py.
+## What happens when the sample service restarts
+
+The sample service keeps tokens and case references in memory. Restarting it
+forgets them, so sign in again. The app saves its own case state in the local
+database and will not automatically repeat a case request whose result is
+unclear.
+
+## This is not real company sign-in
+
+A real service needs company-managed identity, short-lived permissions,
+protected network connections, and a way to check whether an uncertain case
+was already created. The sample service is only for local evaluation.
+
+Related checks are in `tests/integration/test_release_hardening.py`:
+
+- `test_enterprise_requires_bearer_and_enforces_ownership`
+- `test_enterprise_token_never_reaches_browser_or_events`
+- `test_upstream_revocation_preserves_safe_handoff`

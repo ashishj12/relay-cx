@@ -1,33 +1,52 @@
-# Handover
+# Notes for the next person working on Relay CX
 
-Relay resolves synthetic telecom requests by combining authenticated customer records, billing, outages, read-only diagnostics and legacy subscriber evidence. Support-case creation is the supported consequential operation. The supplied archive's scenarios and fixture records are retained to make review reproducible.
+Relay CX is a demo that answers telecom questions using fake customer records.
+The only action that changes data is creating a support case, and the customer
+must confirm it first.
 
-## Decisions and extension points
+## Where to look
 
-The Python business workflow is now a modular src package served by FastAPI/Uvicorn; Next.js/TypeScript and Bun provide the UI. Pydantic handles boundaries; stdlib HTTP handles the fixed enterprise API; SQLite makes local state/action/trace persistence reproducible. Native Google ADK runners execute a request router and an account, billing or service specialist. Session-bound read tools wrap the same authorized enterprise gateway used in Reviewer mode. Application orchestration, identity, confirmation and writes remain deterministic. Restricting synthesis to fact IDs trades freer phrasing for strong customer-specific grounding.
+- `apps/web` contains the website.
+- `apps/api/src/relay_api` contains the backend and workflow.
+- `services/mock-telecom` contains the fake company services.
+- `resources/challenge` contains sample records and test situations.
+- `tests` contains automated checks.
+- `evidence/current` contains saved test results.
 
-To add an enterprise tool, add response models in `domain/models.py`, a fixed-path method in `infrastructure/enterprise.py`, deterministic identity/permission checks and a bounded retry policy. Classify read-only POSTs explicitly; never allow arbitrary method/URL/body through chat. Add actual mock-service integration tests and malformed/identity mismatch tests. Update contract documentation and evidence matrix.
+## If you change something
 
-To add a workflow, extend the strict Interpretation intent enum and provider prompt/reviewer routing, then add a fixed orchestration branch. Define transitions, required facts and failure/handoff behavior. Actions need proposal state, exact confirmation binding, reauthorization, durable execution claims, response identity verification and duplicate/uncertain-outcome tests. Review TRANSITIONS when changing state paths.
+For a new kind of question, update the request handling and add a test for the
+expected answer and a test for an unsafe or failed case.
 
-Update Gemini system instructions and structured response models together in `agents/runtime.py`. Inputs are data, never instructions. Keep identifiers, credentials and tool URLs out of the model output contract. Test invalid/extra fields, empty replies, wrong fact permutations, provider errors and partial-stage fallback. Add live evals only when credentials are deliberately supplied; do not transform doubled success into evidence of live inference.
+For a new company-service read, use a fixed backend route. Check the signed-in
+customer before reading, and check the service response before showing it.
+Never let the browser or Gemini choose an arbitrary URL or account.
 
-## Debugging and operations
+For a new action, require a clear confirmation, prevent accidental duplicate
+requests, and test what happens if the service fails after receiving it. Do not
+automatically repeat an action if you cannot tell whether it succeeded.
 
-Sign in as support.agent, inspect Operations, choose a trace and compare request.received, workflow transitions, authorization, tool.finished/retry, ai.finished and request.finished. Tool metadata reports a sanitized error class. Query `/api/ops/escalations` for completed steps, reason, facts and pending-action state. Customer traces remain session scoped. Metrics use the same persisted events and documented denominators; they are not hardcoded dashboard values.
+## Looking into a failed request
 
-Failure environments: MOCK_AUTH_MODE=expired|unavailable; MOCK_BILLING_MODE=malformed|unavailable|timeout; MOCK_LEGACY_MODE=malformed|unavailable|timeout; MOCK_CASE_MODE=unavailable. Restart only the mock to apply environment changes. The reviewer runner uses per-session headers, enabled explicitly by MOCK_ALLOW_FAILURES=true, so parallel reviewer runs do not mutate global failure modes. Gemini injection is an explicit provider-failure simulation recorded as such. UI clears only results, not state/evidence.
+1. Sign in as `support.agent`.
+2. Open Operations and select the request.
+3. Look for the failed step and its short error description.
+4. Check whether the app has already made or proposed a case before trying
+   again.
 
-Run all regression tests from repository root. They start isolated real HTTP services on ephemeral ports, use temporary databases and write current scenario/JUnit artifacts. The HTTP smoke runner additionally verifies the public reviewer/ops API. Tests requiring localhost may need host permission in a restricted agent sandbox; this is an environment restriction, not a reason to replace HTTP calls with fake business results.
+The app records activity in its local database. Do not delete the database to
+clear an uncertain case result.
 
-## Remaining roadmap
+## Test failures
 
-1. Monitor live provider availability and review the genuine execution evidence before qualification.
-2. Review current Docker and clean-install evidence, then perform an image vulnerability review before external deployment.
-3. Migrate SQLite to a durable transactional shared store and implement multi-instance action claims.
-4. Replace synthetic authentication/downstream services with private IAM-protected enterprise APIs and OIDC/SSO.
-5. Add queue-scoped agent access, external handoff delivery, enterprise DLP, retention and encrypted backups.
-6. Export structured events/spans to Cloud Logging/Monitoring/Trace, add token accounting and alerts.
-7. Harden ingress, deadlines, request concurrency, graceful draining, load/chaos testing and incident runbooks.
+The tests start local fake services and use temporary databases. Some tests
+need permission to use localhost. If an environment blocks local network
+access, fix the environment rather than replacing real HTTP checks with fake
+answers.
 
-Known source limitations: historical outage estimates; only one successful legacy subscriber fixture; in-memory mock case keys; no case lookup API. These cannot be interpreted as real-world outage predictions or durable backend guarantees. The demo video is excluded by the latest user request.
+## Limits to remember
+
+The demo has a small set of fake records, one successful legacy subscriber
+example, and no service for looking up an uncertain case. Its database and
+backend setup are for one process only. It has not been deployed to Google
+Cloud or approved for real customer use.

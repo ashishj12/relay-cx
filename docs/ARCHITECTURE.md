@@ -1,55 +1,55 @@
-# Architecture
+# How Relay CX works
+
+Relay CX is a demo support app for a made-up phone and internet company. A
+customer can ask about their account, bill, or service. The app checks sample
+company records and explains what it found.
 
 ![Relay CX architecture diagram](./Architecture.png)
 
-## Deployment and trust boundaries
+## The short version
+
+1. You use the website and sign in.
+2. The website sends your request to the app's backend.
+3. The backend checks who you are and what account you can access.
+4. It reads the matching sample records.
+5. Gemini may help understand the question and choose which verified facts to
+   show. It cannot choose another customer's account or create a case.
+6. The app saves a record of what happened.
+
+If the app is about to create a support case, it shows you what it plans to do
+and waits for you to confirm. A message such as “yes” in the chat is not enough.
+
+## Main parts
+
+| Part | In plain language |
+|---|---|
+| Website (Next.js) | The pages customers and support staff use. |
+| Backend (FastAPI) | Checks requests, runs the support steps, and controls access. |
+| Gemini (through Google ADK) | Helps understand a question and select facts. It cannot access accounts by itself. |
+| Enterprise gateway | The only route from the backend to the sample company services. |
+| Sample services | Fake account, billing, network, and legacy subscriber records. |
+| SQLite database | Saves local sessions, case actions, and activity records. |
+
+## What happens when something goes wrong
+
+If the request is unclear, the app asks a question before reading protected
+records. If records disagree or a service fails, it tells you that it could not
+finish and prepares the request for a human. If Gemini is unavailable, the app
+shows a degraded status; it does not pretend that Gemini succeeded.
+
+The activity records connect each request to its steps and results. They do not
+store raw passwords, Gemini prompts, provider replies, or XML documents.
+
+## Important limits
+
+This is a local demo that uses fake company data. It runs with one backend
+process and a local SQLite database. It is not ready to serve real telecom
+customers or to run across multiple servers.
+
+The cloud picture below shows a possible setup; it is not a running cloud
+deployment.
 
 ![Relay CX deployment diagram](./Deployment.png)
 
-Google ADK supplies validated interpretation and invokes a session-bound read tool before ordering verified facts. It cannot select customer IDs, URLs, arbitrary tools or case writes. Customer browsers cannot reach enterprise fixtures. API state and traces remain on the trusted backend. GCP resource provisioning has not been executed. See deployment/README.md for operational setup and scaling limits.
-
-## Components and authority
-
-| Component | Responsibility and boundary |
-|---|---|
-| Next.js BFF | Allowlisted routes, origin checks, streaming 8 KiB body limit; no enterprise URLs or keys in browser code |
-| FastAPI transport | Strict request schemas, cookie/session and separate customer/support roles |
-| ResolutionService | Explicit transitions, context, fallback, conflict handling, proposal and handoff |
-| ADK router | Redacted messages to strict intent/service/confidence; no tools or credentials |
-| ADK specialist | One session-bound read tool; exact ordering of verified fact IDs; no write authority |
-| Enterprise gateway | Authenticated fixed paths; pre-fetch ownership checks, returned identity validation, safe bounded retries |
-| CaseActions | Matching explicit confirmation, expiry, durable execution claim, receipt verification; no ambiguous write retry |
-| Store | SQLite WAL: sessions, actions, events, handoffs, metrics; single API process |
-| Synthetic services | Supplied JSON/XML fixtures; independent bearer/expiry/ownership checks; private network |
-
-```mermaid
-flowchart LR
-  Browser -->|cookie| BFF[Next.js BFF]
-  BFF --> API[Session and role gate]
-  API --> WF[Deterministic workflow]
-  WF --> Router[ADK router / Gemini]
-  WF --> Specialist[ADK account, billing or service agent]
-  Specialist -->|scoped read| GW[Authorized gateway]
-  WF -->|explicit confirmation| Action[Case controller]
-  Action --> GW
-  GW -->|bearer / JSON| Modern[Synthetic enterprise services]
-  GW -->|bearer / XML| Legacy[Legacy subscriber service]
-  WF --> Store[SQLite state / actions / handoffs]
-  Router --> Events[Validated redacted events]
-  Specialist --> Events
-  GW --> Events
-  Events --> Store
-  Store --> Ops[Traces / metrics]
-```
-
-## Workflow and termination
-
-NEW → INTERPRETING → NEEDS_CLARIFICATION, or AUTHORIZATION_CHECK → FETCHING_ENTERPRISE_DATA → ANALYZING_RESULTS → RESOLVED. Unknown intent/service asks a specific question before protected reads. Clarification retains bounded context and resumes. Foreign account IDs are denied before interpretation/retrieval. Case proposals enter AWAITING_CONFIRMATION; matching explicit confirmation enters EXECUTING_ACTION → VERIFYING_ACTION → RESOLVED. Conflicts and enterprise errors escalate. Provider failure switches visibly to DEGRADED; deterministic permissions remain active. Uncertain actions cannot retry automatically.
-
-One specialist runs per inquiry; there is no recursive delegation or agent messaging. Router context is at most four redacted messages. Specialists receive intent/service and normalized facts through their own tool, without identifiers in arguments. Repeated calls reuse the evidence bundle. Every fact ID must appear exactly once; unsupported facts or prose are rejected. Conflicts are checked in code. Durable application state survives API restart; ADK context is ephemeral. Handoffs retain prior verified evidence with original trace/time and keep it separate from current facts.
-
-## Telemetry semantics
-
-Events validate against the supplied schema including formats, sanitize recursively and persist before presentation. IDs correlate requests, sessions and steps. Tool events include duration/status/retries and sanitized summaries. ADK run/tool events show actual execution. No raw credentials, prompts, provider responses or XML are logged. SQLite is authoritative when the JSONL mirror cannot be written.
-
-Metrics cover persisted events since database initialization. Resolution/escalation/failure/handoff divide counts by request.received, including overview reads and confirmation requests. Average workflow duration uses request.finished. Tool success uses tool.finished. Retry rate is retries/tool completions and can exceed one. Gemini metrics include explicitly labeled simulated failures (`metadata.simulated`); filter for live-only monitoring. Component usage is event-counted. Empty denominators yield zero. These are observed technical metrics, not forecast business KPIs. Production retention/incremental aggregation/export remain extension points.
+See the [deployment guide](../deployment/README.md) before running the app
+outside a local demo.

@@ -1,5 +1,4 @@
-import type { NextConfig } from "next";
-const config: NextConfig = {
+const config = {
   output: "standalone",
   poweredByHeader: false,
   async headers() {

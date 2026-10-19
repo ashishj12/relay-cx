@@ -1,30 +1,40 @@
-# Review of the updated Relay CX archive
+# What has been checked
 
-The updated ZIP is the source of truth for this review. Its UI design is preserved. The supplied challenge text is retained verbatim in docs/challenge/ORIGINAL_CHALLENGE.md and its requirements are mapped to current code/tests/scenarios in REQUIREMENT_EVIDENCE_MATRIX.md. This is engineering evidence for independent review; no Claude/Qwen execution, qualification score or acceptance guarantee is claimed.
+This project has been tested as a local demo using fake customer records. The
+saved results are in
+[`evidence/current/verification-summary.json`](../evidence/current/verification-summary.json).
 
-## Findings addressed
+## Checks recorded
 
-| Finding | Change and evidence |
-|---|---|
-| Enterprise access token discarded after login | Server-side bearer propagation; independent upstream expiry/ownership checks; direct HTTP security tests |
-| Customer profile returned fixture credentials | Profile strips username/testPassword/email; browser and event secret-leak assertions |
-| Navigation lost conversation and approval | Keep support component mounted during other views; real Docker browser verification of history, navigation, approval and refresh |
-| Agent stage could exceed proxy deadline | Per-stage wall-clock cap plus three-call ADK bound; cancellation regression |
-| Chunked body could bypass Content-Length guard | Streaming size check before JSON parsing; real chunked HTTP regression |
-| Permissive enterprise scalar coercion | Strict bounded Pydantic records and duplicate JSON field rejection |
-| Incomplete conflict comparison | Exact network/subscriber status reconciliation; conflict regression and handoff |
-| Partial evidence lost on later failure | Retain current verified facts and timestamped prior evidence in correlated handoffs |
-| Expired proposal could not be replaced | Expiry event and fresh proposal without write; expiry regression |
-| XML accepted invalid/naive timestamps | Require a timezone-aware parsed timestamp; encoding/DTD/identity/status tests retained |
-| Missing handover and stale evidence | Rebuild docs, runbook, full matrix, clean install and current execution results |
-| Shipping Git/dependencies/history | Source allowlist, env/key scan, per-file hashes and fresh ZIP validation |
+- Backend tests passed.
+- The eight sample customer situations passed in reviewer mode.
+- The Docker setup and a fresh install passed.
+- One recorded live Gemini evaluation passed.
 
-## Verification and remaining conditions
+These checks help show how the demo behaved at the time of testing. They are
+not an independent qualification score and do not prove readiness for real
+customers.
 
-See evidence/current/verification-summary.json for current executable results and source freshness. Backend tests cover positive, negative, concurrency/restart, malformed contracts and ADK behavior. The eight scenarios run through real HTTP services; Docker checks include the Next.js gateway. Clean verification extracts the archive, verifies manifest hashes, installs dependencies afresh, tests both languages, runs scenarios and builds the frontend. Provider simulations are labeled and never counted as live inference.
+## Improvements in this version
 
-Fresh credentialed Google ADK evaluation passes with Gemini 3.8 Flash: account inquiry, service clarification, resumed network/XML diagnostics, case proposal and explicit confirmed case creation. Every recorded model stage succeeds without simulated output or deterministic fallback. The configured model is visible in ai.finished events and the live evaluator checks actual read_account/diagnose_service tool requests. See evidence/current/live-gemini-evidence.json.
+- The fake company services check login tokens and customer ownership.
+- Customer passwords and service credentials are kept out of browser
+  responses and activity records.
+- Support staff can inspect other screens without losing an open conversation.
+- Requests and agent stages have limits.
+- The app checks service responses and keeps useful results when it must hand
+  a request to a person.
+- Uncertain support-case requests are not automatically repeated.
 
-Earlier Gemini 3.5 Flash calls returned HTTP 429 and the older 2.5 Flash model returned HTTP 404 despite appearing in discovery. Those failures are retained separately with availability diagnostics. They demonstrate explicit DEGRADED behavior, not live success. The sample environment now names the verified 3.8 Flash model; reviewers must configure their own enabled model/key for live execution. Reviewer mode remains credential-free.
+## Before a real launch
 
-GCP architecture/build preparation is included; cloud resources were not provisioned. Local synthetic deployment uses a single API process, SQLite WAL and process-local upstream token/case stores. Horizontal scaling, durable enterprise idempotency/reconciliation, federated identity, DLP/retention and managed telemetry export remain documented real-world deployment work. The challenge permits a deployment approach and synthetic services; this release does not claim public carrier-production certification. Demo video remains excluded by user instruction. Independent scoring remains pending.
+This project has not been deployed to Google Cloud. It uses fake identity,
+sample services, one backend process, and a local SQLite database. Real use
+would require company sign-in, protected connections to real services, secure
+data retention and backups, shared storage for multiple servers, operational
+monitoring, and an independent security review.
+
+The combined challenge source document referenced by older evidence notes is
+missing from this working copy. The related sample materials are in
+[`resources/challenge/`](../resources/challenge/). The demo video is not
+included.

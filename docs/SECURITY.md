@@ -1,33 +1,55 @@
-# Security
+# Keeping customer information safe
 
-The trust boundary is the backend, never the model or browser. Synthetic authentication is performed against the supplied login API and its response is validated. A random token is sent only in an HttpOnly, SameSite=Strict cookie; SHA-256 of the token indexes server-side state. The upstream accessToken is retained only in server-side session storage to authenticate enterprise calls; it never reaches the browser, Gemini or events. Restrict and encrypt disks and backups because session rows retain upstream bearer values as well as history. Expiry rejects access; it does not purge stored rows. Apply retention and secure deletion before real-world use. Sessions expire at the upstream lifetime capped at one hour. Logout expires the row and removes the cookie. Reauthentication generates a fresh token.
+Relay CX is a demo with fake customer data. It includes some safety checks, but
+it is not approved for real customer information.
 
-Protected tools enforce unexpired customer-role sessions and exact account binding before record retrieval, then verify returned identities. Legacy and diagnostic service IDs must belong to the session account. Customer-supplied account references are checked before AI interpretation; model schemas cannot propose arbitrary IDs or URLs. No direct endpoint offers arbitrary enterprise retrieval. Trace visibility is restricted to the owning session or support-agent role. Operations data and scenario execution require the support-agent role; that role alone cannot perform customer actions.
+## Who can see what
 
-Login attempts are capped at 30 per source IP per minute in the application process. Browser writes require JSON; mismatched Origin is rejected. SameSite cookies, no permissive CORS, origin validation, no-store, nosniff, frame blocking and React-escaped output limit browser attacks. In production configure PUBLIC_ORIGIN and COOKIE_SECURE=true behind TLS. No cookie signing secret is needed for opaque sessions. Expose only the Next.js gateway behind a TLS ingress; keep API and fixtures private.
+- A customer must sign in before the app reads protected records.
+- The backend checks that a record belongs to the signed-in customer.
+- The support role can review activity but cannot act as a customer.
+- Gemini cannot choose an account, service address, or web link.
+- The app checks company-service answers before showing them.
 
-## Confirmation and idempotency
+The browser gets a session cookie. The separate token used to contact the
+sample company stays on the backend. Passwords, tokens, raw Gemini responses,
+and raw XML should not appear in activity records.
 
-An action proposal stores a random ACT identifier, authenticated account, redacted summary, timestamp and pending status. Only `/api/confirm` with a matching action ID and a strict boolean can execute it; chat text such as “yes” never submits a case. Authorization is checked again at execution. Proposals expire after ten minutes; cancellation prevents later submission. The executing marker is committed before the external POST, and completed case ID/status is committed afterward. A repeated or concurrent confirmation returns the recorded case ID without another POST. The case service receives the same action identifier as its idempotency key.
+## Creating a support case
 
-Transport errors or malformed responses after submission are ambiguous. Mark the action uncertain and escalate; do not automatically retry. Restart while executing is also blocked. The supplied service stores keys in RAM, so durability across mock restarts is limited. There is no case lookup endpoint; an agent must reconcile an uncertain action out of band before proposing another action. Do not clear the database to “fix” an uncertain state.
+The app first shows a proposed case. The customer must confirm that proposal
+through the confirmation control. Typing “yes” in chat does not create a case.
+The app checks the customer's access again before sending it.
 
-## Threat model and evidence
+If the app cannot tell whether the company created a case, it stops and asks
+for human review. It does not send the same request again automatically.
+Because the fake company has no case-lookup feature, a person may need to check
+the result separately.
 
-| Threat | Control | Regression evidence |
-|---|---|---|
-| Unauthenticated access | Cookie/session gate | test_http_auth_and_roles |
-| Cross-customer record read | Pre-fetch account binding and returned identity | test_tool_guard_before_network; test_trace_isolation; SCN-005 |
-| Model ownership claim | Strict schema, session-bound read tools without ID parameters | test_invalid_gemini_output; test_prompt_injection_cannot_change_identity |
-| Embedded enterprise instructions | Treat all input as data, deterministic rendering | provider system instruction; fact selection tests |
-| Replayed/concurrent action | Durable action states, lock, idempotency key | test_duplicate_concurrent_and_restart |
-| Confirmation bypass | Dedicated strict action-confirmation API | test_confirm_binding_decline_and_no_chat_bypass |
-| Malicious XML / DTD / entity | UTF-8-only bounded parser; reject declarations and duplicate/missing fields | test_legacy_bad_xml |
-| Failure falsely reported successful | Validated results and explicit escalation | test_real_service_failure; SCN-007 |
-| Secret leakage | Server-side credentials; redaction; no request-body logging | test_event_schema_metrics_redaction |
+## What the demo protects against
 
-## Remaining production controls
+- Requests made without signing in.
+- Attempts to read another customer's records.
+- Model output that tries to change the customer's identity.
+- Repeated confirmation of the same case.
+- Invalid service replies and unsafe XML.
+- Accidentally showing tokens in the browser or activity records.
 
-The synthetic APIs independently require opaque, unexpired bearer identities and enforce profile, account, service and postal-code ownership. Their bearer store is process-local; a mock restart requires login again. Private networking remains essential. Real APIs require federation, service IAM/mTLS and credential rotation. The configured enterprise origin is trusted operator configuration; no model or client may change it. Sensitive history and handoffs are stored in a local SQLite file and restricted by filesystem access, not application encryption. Add encryption-at-rest policy, retention, purge, backup access controls, and audit export. Pattern redaction is intentionally bounded and cannot recognize every possible secret a customer pastes; use enterprise DLP/minimization for real customers. Browser-rendered history is accessible to anyone who steals a live session cookie; TLS and device/session controls remain necessary.
+Automated tests cover these examples, but passing tests cannot prove that every
+attack is prevented.
 
-SQLite plus the process lock supports one process only. Add transactional shared action claims and durable backend idempotency before horizontal scaling. Request/IP limits are process-local and no WAF, full abuse controls, SSO/OIDC, upstream credential rotation or penetration testing is supplied. Human support uses a coarse global support-agent role in synthetic evaluation; production needs scoped queues, consent and least-privilege agent access. The integration suite uses controlled doubles; current live evidence records genuine inference separately. Comprehensive adversarial live-model evaluation remains future work.
+## What a real service still needs
+
+Before handling real customers, the project would need:
+
+- company-managed sign-in and permissions;
+- protected connections to the company's real services;
+- encryption, backup access controls, and rules for deleting old data;
+- monitoring, rate limits, and a response plan for incidents;
+- a shared database and safe case handling if more than one backend is used;
+- an independent security review.
+
+Today, sign-in and company services are fake, activity is kept in a local
+SQLite file, and the app is designed for one backend process. Do not expose
+the backend or fake company services directly to the internet. See the
+[deployment guide](../deployment/README.md) for more limits.

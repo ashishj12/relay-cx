@@ -1,23 +1,47 @@
-# Google ADK invocation register
+# What Gemini does in Relay CX
 
-Live mode uses google-adk 2.12.0 with the official Gemini model adapter. The configured model is recorded in ai.finished events. Root .env is ignored and excluded from archives. No credential, raw prompt, tool arguments or raw provider output is returned in telemetry.
+Gemini helps with two things: understanding the customer's message and
+choosing which verified facts answer it. The backend checks the customer's
+identity, reads the records, and controls all actions. Gemini cannot send a
+case or choose a different customer's account.
 
-| Agent | Input and behavior | Output validation | Authority |
-|---|---|---|---|
-| request_router | Up to four redacted customer messages; classify telecom intent and explicitly stated service | Native JSON schema plus strict Interpretation Pydantic validation | No tools or customer identifiers |
-| account_agent | Account intent; calls read_account | Exact permutation of returned verified fact IDs | Read only, authenticated account |
-| billing_agent | Billing intent; calls read_billing | Same Selection validation | Read only, authenticated account |
-| service_agent | Network or legacy intent; calls diagnose_service | Same Selection validation | Read only, authorized service |
-| action_controller | Deterministic application component; never an LLM agent | Exact action binding, expiry, reauthorization, durable claim, backend receipt | Case write only after explicit confirmation |
+## The steps
 
-Source: agents/runtime.py, agents/catalog.py, application/evidence.py and application/case_actions.py. Each ADK Runner has an ephemeral session, a maximum of three model calls, a per-stage wall-clock timeout capped at 40 seconds and one SDK attempt per call. Durable customer history, identity, actions and traces belong to the application's SQLite store. Each tool accepts no IDs or URLs and closes over an already authorized request. Repeated tool calls reuse the same evidence. Raw enterprise values cannot become instructions or authorize writes. Only normalized facts reach fact selection; the renderer uses those original facts.
+| Step | What it means |
+|---|---|
+| Understand the request | Gemini identifies the kind of help requested and any service the customer named. |
+| Read the right sample records | A specialist uses a limited, read-only tool for the signed-in customer. |
+| Choose verified facts | Gemini returns references to facts the tool already found. The app rejects missing or invented references. |
+| Create a case | The backend does this only after the customer confirms the proposal. Gemini does not perform this step. |
 
-agent.invoked, agent.run_started, agent.tool_requested, agent.tool_returned and agent.run_finished events expose real execution. Agent Studio distinguishes configured capabilities from recorded invocations. Reviewer mode shares enterprise adapters and workflow controls but explicitly simulates interpretation and ordering; it does not emit successful live agent runs.
+The tool does not let Gemini provide account numbers or service URLs. The
+backend supplies the permitted scope. The app shows the original checked facts
+rather than trusting Gemini to rewrite them.
 
-Provider errors, invalid schemas, skipped tools, incomplete fact permutations and quota errors produce visible DEGRADED mode and sanitized reasons. Tools do not retry unsafe writes. The live evaluator requires successful unsimulated model stages, actual ADK tools, clarification and confirmed case creation. LIVE_EVALUATION_PAUSE optionally paces live requests for low provider quotas; it does not change failure criteria.
+## If Gemini fails
 
-Run python tools/evaluate.py --mode LIVE_AI --output evidence/current/live-gemini-evidence.json. A doubled model in tests is not evidence of genuine Gemini inference. Inspect current evidence for provider availability and execution status.
+The app reports that Gemini could not complete its step and shows a degraded
+status. It does not describe a test simulation as a real Gemini response. The
+saved events distinguish real calls from simulated failures.
 
-Reference: [ADK RunConfig](https://adk.dev/runtime/runconfig/). A normal inquiry uses one router request and two specialist requests (tool call and ordering); each stage is capped at three calls. Case proposal uses interpretation; confirmation invokes no model. SDK deadlines and the application wall-clock limit are separate controls.
+## Run a live check
 
-Verified model for this release: `gemini-3.8-flash`. The fresh live evaluator passes all five turns with six successful model stages and actual native ADK read tools, without fallback. Prior unavailable/quota-limited model attempts are retained separately under evidence/current for operational provenance. Availability is account-dependent; use a model enabled for the deployment identity.
+Set `GEMINI_API_KEY` and `GEMINI_MODEL` in a private local environment. Do not
+put a real key in source code or send it in a chat. Then run:
+
+```bash
+python tools/evaluate.py --mode LIVE_AI --output evidence/current/live-gemini-evidence.json
+```
+
+The latest saved result is in
+[`live-gemini-evidence.json`](../evidence/current/live-gemini-evidence.json).
+It shows one successful run with `gemini-3.8-flash`. Model access depends on
+your Google account, so a new run may have a different result.
+
+## A few terms
+
+- **ADK:** Google's library for running model-based tasks and tools.
+- **Tool:** A limited function the app allows a specialist to use.
+- **Live run:** A request sent to the real Gemini service, not a test substitute.
+- **Degraded:** The app could not use Gemini successfully, so it reports the
+  problem instead of pretending it worked.
