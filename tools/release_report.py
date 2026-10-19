@@ -1,5 +1,3 @@
-"""Summarize current evidence without inventing an independent qualification score."""
-
 import hashlib
 import json
 from pathlib import Path

@@ -1,37 +1,108 @@
 # Relay CX
 
-Relay CX is a telecom customer-support workspace for account questions, billing checks, service diagnostics, and confirmed support cases. Google ADK agents use Gemini to understand requests and write replies from authorized enterprise results. Deterministic backend code controls identity, ownership and every consequential action.
+Relay CX is a customer-support app for telecom accounts. A customer can check a bill, understand their plan, investigate a connection problem, and approve a support case from the same conversation.
 
-This is the challenge's productionized proof of concept. All customer data and enterprise systems are synthetic. It can be reviewed locally without a paid AI account; live mode uses the configured Gemini service.
+It was built for the **Enterprise AI Customer Experience Resolution System** challenge. Gemini and Google ADK handle the live AI workflow; the backend controls account access, service calls, and actions. The telecom services and customer accounts are supplied test data.
 
-## What the app does
+## Demo video
 
-- Looks up sample account, bill, and service information.
-- Uses Gemini to help understand questions when live AI is enabled.
-- Requires the customer to confirm before creating a sample support case.
-- Saves a record of what happened so it can be reviewed.
+**[Watch the Relay CX demo on Google Drive](https://drive.google.com/file/d/18qgT4OUle0U0e10KPms8YS1P_VFmqvDr/view?usp=drive_link)**
 
-## Run it with Docker
+## Start here
 
-This is the quickest way to try the app. Install Docker, open a terminal in
-the project folder, and run:
+- [Run the app with Docker](#run-the-app-with-docker)
+- [Sign in and try it](#sign-in-and-try-it)
+- [Use real Gemini replies](#use-real-gemini-replies)
+- [Run without Docker](#run-without-docker)
+- [Configuration](#configuration)
+- [Tests and verification](#tests-and-verification)
+- [Deployment and current limits](#deployment-and-current-limits)
+
+## Run the app with Docker
+
+Install Docker with Compose and make sure Docker is running. Open a terminal in the project folder, then run:
 
 ```bash
 docker compose up --build
 ```
 
-When it starts, open **http://127.0.0.1:3000** in your browser.
+Once the services have started, open **http://127.0.0.1:3000**.
 
-To stop the app, press `Ctrl+C` in the terminal. You can also run:
+A fresh checkout uses **Reviewer mode**, which works without a Gemini key. If you already have a `.env` file, its settings still apply. Set `APP_MODE=REVIEWER` there if you want to try the app without using Gemini.
+
+Docker starts the website, API, and sample telecom service together. You do not need to install Python or Bun separately for this option.
+
+To stop the app, press `Ctrl+C`, then run:
 
 ```bash
 docker compose down
 ```
 
-## Run it for development
+This keeps the saved data. The `cx-data` volume holds application state; `enterprise-data` holds sample-service identities and case receipts. Removing these volumes removes that data.
 
-You will need Python 3.11 or newer and Bun 1.3.14 or newer. From the project
-folder, run the commands for your computer.
+## Sign in and try it
+
+Use a supplied account from the sign-in page:
+
+| Account                               | Username        | Password            |
+| ------------------------------------- | --------------- | ------------------- |
+| Alex Morgan — home internet           | `alex.morgan`   | `ReviewerPass-1001` |
+| Jordan Lee — mobile                   | `jordan.lee`    | `ReviewerPass-1002` |
+| Support staff — review and operations | `support.agent` | `ReviewerPass-3001` |
+
+These are public test credentials for synthetic accounts.
+
+For a first walkthrough, sign in as Jordan and try:
+
+1. **“What's my data plan and last month's bill?”** Check the plan, billing period, and line items in the answer.
+2. **“My internet keeps dropping.”** Answer the follow-up question if Relay asks which service you mean.
+3. **“Create a support case for my mobile connection.”** Read the summary before confirming. A completed request should show a case number.
+4. **“Show me the bill for ACC-2001.”** Jordan should be refused access to Alex's account.
+5. Select **Request human support** to save a handoff reference.
+
+The support account can run the eight challenge scenarios and inspect operational results. Customer accounts cannot access those staff-only functions.
+
+Relay can open a sample support case, but it cannot change a plan, add roaming, or update account preferences. A human-review request saves the conversation for inspection; this demo does not contact live staff or arrange a callback.
+
+## Use real Gemini replies
+
+There are two ways to review the app:
+
+| Mode       | What happens                                                                                                                                                                     | What you need                                         |
+| ---------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------- |
+| `REVIEWER` | AI interpretation and fact selection are deterministic. The app still calls the local telecom services and applies the same access, validation, confirmation, and tracing rules. | No Gemini key                                         |
+| `LIVE_AI`  | Gemini runs through Google ADK to interpret the request, use an authorized tool, and return an answer based on verified records.                                                 | A valid key, an available model, and sufficient quota |
+
+To enable live mode:
+
+1. If you do not already have `.env`, copy `.env.example` to `.env`. Keep any existing file and its settings.
+2. Set these values in `.env`:
+
+   ```dotenv
+   APP_MODE=LIVE_AI
+   GEMINI_API_KEY=your_key_here
+   GEMINI_MODEL=your_available_model_id
+   ```
+
+3. Recreate the API container so it receives the new settings:
+
+   ```bash
+   docker compose up -d --force-recreate api
+   ```
+
+For a local development session, stop the launcher and start it again instead. The workspace should show **Live AI** after sign-in.
+
+Live AI still uses the challenge's synthetic telecom services. Enabling Gemini does not connect the app to a real telecom provider. Factual replies are limited to validated statements from those services.
+
+If a model call fails, Relay explains the failure and saves a review reference. It does not silently replace the reply with a Reviewer answer. An **Assistant unavailable** status is a failed live request, not proof of successful AI execution. Human-review requests remain available without the model.
+
+The separate `DEGRADED` configuration is an explicit offline option. It does not count as live Gemini inference.
+
+## Run without Docker
+
+For local development, install **Python 3.11 or later** and **Bun 1.3.14**. The recorded verification used Python 3.12 and Bun 1.3.14. Internet access is needed to install dependencies.
+
+Run the commands for your operating system from the project folder.
 
 ### Windows PowerShell
 
@@ -39,7 +110,7 @@ folder, run the commands for your computer.
 python -m venv .venv
 .venv\Scripts\python.exe -m pip install -r requirements-dev.txt
 bun install --frozen-lockfile
-Copy-Item .env.example .env
+if (-not (Test-Path .env)) { Copy-Item .env.example .env }
 .venv\Scripts\python.exe tools/dev.py
 ```
 
@@ -49,103 +120,114 @@ Copy-Item .env.example .env
 python3 -m venv .venv
 .venv/bin/python -m pip install -r requirements-dev.txt
 bun install --frozen-lockfile
-cp .env.example .env
+[ -f .env ] || cp .env.example .env
 .venv/bin/python tools/dev.py
 ```
 
-Open the website at **http://127.0.0.1:3000**. The API's interactive
-documentation is at **http://127.0.0.1:8080/docs**. Press `Ctrl+C` in the
-terminal to stop the development app.
+Open **http://127.0.0.1:3000**. The launcher starts all three services; `Ctrl+C` stops them.
 
-## Sign in
+In Reviewer mode, the local API documentation is at **http://127.0.0.1:8080/docs**. That port is available with this development setup; Docker keeps the API private.
 
-Use one of these sample accounts:
+## Configuration
 
-| User | Username | Password |
-|---|---|---|
-| Alex Morgan — home internet | `alex.morgan` | `ReviewerPass-1001` |
-| Jordan Lee — mobile | `jordan.lee` | `ReviewerPass-1002` |
-| Support staff | `support.agent` | `ReviewerPass-3001` |
-| Staff alias (same support role) | `admin` | `admin@123` |
+`.env.example` lists the available settings. Copy it once, then edit `.env`. Keep real keys out of version control and screenshots. The API uses the Gemini key; the browser does not receive it. Existing process environment variables take precedence over the local file.
 
-These accounts and passwords are fake and are only for this demo. Never use
-them for a real service.
+### Settings most people need
 
-## Choose a mode
+| Setting           | Purpose                                                                                            |
+| ----------------- | -------------------------------------------------------------------------------------------------- |
+| `APP_MODE`        | `REVIEWER` for offline review, `LIVE_AI` for Gemini, or explicitly selected `DEGRADED`.            |
+| `GEMINI_API_KEY`  | Server-side key. Required only for live mode.                                                      |
+| `GEMINI_MODEL`    | A model available to your key. The example value does not guarantee access.                        |
+| `PUBLIC_ORIGIN`   | Browser address, including the port. Local default: `http://127.0.0.1:3000`.                       |
+| `COOKIE_SECURE`   | Leave `false` for local HTTP. Use `true` behind HTTPS.                                             |
+| `AI_TIMEOUT`      | Timeout per model stage; default and maximum are 40 seconds. This is not a total request deadline. |
+| `REQUEST_TIMEOUT` | Timeout for a telecom-service request; default is 2 seconds.                                       |
+| `MAX_RETRIES`     | Safe-read retries; default is 1. Case creation is not blindly retried.                             |
 
-- **Reviewer mode** is the default. Only AI interpretation and fact ordering are deterministic. It still calls the real local HTTP services, enforces ownership and confirmation, validates XML, and records actual events. No Gemini key is needed.
-- **Live AI mode** uses real Gemini through ADK for routing, tool use and the customer-facing reply. Set `APP_MODE=LIVE_AI`, `GEMINI_API_KEY` and an available `GEMINI_MODEL` in ignored `.env`, then recreate the API container. Provider failures stop the answer and save the request for review; they never substitute a reviewer answer.
-- **Degraded status** appears when a live model stage fails. The response explains the failure. An explicitly configured `APP_MODE=DEGRADED` instead selects the documented deterministic offline path. Neither counts as successful live inference.
+### Local service and storage settings
 
-Keep `.env` on your computer. Do not commit it or share a real API key.
+| Setting                                                                     | Purpose                                                                                |
+| --------------------------------------------------------------------------- | -------------------------------------------------------------------------------------- |
+| `APP_HOST`, `APP_PORT`                                                      | Local API address and port; defaults are `127.0.0.1` and `8080`.                       |
+| `MOCK_HOST`, `MOCK_PORT`                                                    | Local sample-service address and port; defaults are `127.0.0.1` and `8090`.            |
+| `ENTERPRISE_API_BASE_URL`                                                   | Address of the sample telecom service. Compose supplies its private container address. |
+| `DATABASE_PATH`                                                             | Application database path. Compose stores it in `cx-data`.                             |
+| `MOCK_DATABASE_PATH`                                                        | Sample-service database path. Compose stores it in `enterprise-data`.                  |
+| `STRUCTURED_LOG_PATH`                                                       | Optional local structured-event log path.                                              |
+| `MOCK_ALLOW_FAILURES`                                                       | Allows controlled service failures during review.                                      |
+| `MOCK_AUTH_MODE`, `MOCK_BILLING_MODE`, `MOCK_LEGACY_MODE`, `MOCK_CASE_MODE` | Optional failure settings for isolated service tests.                                  |
 
-## Run the checks
+`GOOGLE_CLOUD_PROJECT`, `GCP_REGION`, `RELAY_API_IMAGE`, and `RELAY_WEB_IMAGE` are for the optional cloud setup. You do not need to fill them in to run locally. Setting them does not create cloud resources or change the Gemini client to Vertex AI.
 
-After installing the development dependencies, run these from the project
-folder:
+If sign-in fails, check the sample credentials and use one browser address consistently. `localhost` and `127.0.0.1` have separate cookies. A Gemini **401/403** points to authentication or access; **429** means the provider rejected the request for rate or quota limits. Changing the UI cannot fix provider quota.
+
+## How the project fits together
+
+The frontend sends a customer's message to the API. In live mode, ADK agents interpret it and request the appropriate account, billing, or service check. The backend verifies access, validates service responses, and records the outcome. Creating a case requires a separate customer confirmation and a verified backend receipt.
+
+The stack is **Next.js, TypeScript, and Bun** for the frontend; **FastAPI, Pydantic, Google ADK, and SQLite** for the backend.
+
+```text
+apps/web/               Website and customer/staff screens
+apps/api/src/relay_api/ API, agents, workflows, adapters, and storage
+services/mock-telecom/  Runnable synthetic telecom services
+resources/challenge/   Supplied contracts, fixtures, and starter material
+tests/                 Acceptance, integration, and contract tests
+tools/                 Development, evaluation, and release commands
+deployment/            Container and Google Cloud configuration
+docs/                  Architecture, security, and handover guides
+evidence/current/      Recorded test and workflow results
+```
+
+The supplied starter solution is retained for reference. It is not the application entry point.
+
+## Tests and verification
+
+After installing the development dependencies, run:
 
 ```powershell
 .venv\Scripts\python.exe -m pytest -q
-bun run typecheck
-bun run test:web
-bun run build
 .venv\Scripts\python.exe tools/evaluate.py --mode REVIEWER
+bun run test:web
+bun run typecheck
+bun run build
 ```
 
-These checks test the app and its sample workflows. Passing them does not
-prove the app is ready for real customers.
+On macOS/Linux, replace `.venv\Scripts\python.exe` with `.venv/bin/python`.
 
-## Where to go next
+To record genuine Gemini execution, configure live access first, then run:
 
-- [Try the app step by step](docs/REVIEWER_GUIDE.md)
-- [Understand how the app works](docs/ARCHITECTURE.md)
-- [Learn about its safety limits](docs/SECURITY.md)
-- [Run and deploy the project](deployment/README.md)
-- [Read about Gemini](docs/GEMINI_INVOCATIONS.md)
-- [See the saved check results](docs/FINAL_COMPLIANCE_AUDIT.md)
+```powershell
+.venv\Scripts\python.exe tools/evaluate.py --mode LIVE_AI --output evidence/current/live-gemini-evidence.json
+```
 
-## Important limits
+This makes real provider calls and consumes quota. A provider failure is recorded as a failed live verification.
 
-The app uses fake sign-in, fake company services, and a local SQLite database.
-It is designed to run with one backend process. The Google Cloud setup is a
-reference only; it has not been deployed. Before using real customer data, the
-project needs real company sign-in, protected connections, secure data
-handling, monitoring, and more testing.
+The recorded clean-release results are **166 backend tests passed**, **8 Reviewer scenarios passed with 160 checks**, and **13 frontend tests passed**. TypeScript and the production build also passed. These are recorded results, not tests rerun by opening this README. The latest recorded live Gemini attempt failed with HTTP 429; successful current live inference remains unverified.
 
+See the [verification summary](evidence/current/verification-summary.json), [requirement evidence matrix](docs/REQUIREMENT_EVIDENCE_MATRIX.md), and [repair report](docs/REMEDIATION.md) for the supporting detail. The checklist is not an independent challenge score.
 
-## Environment settings
+To produce a source ZIP after your own checks:
 
-Copy `.env.example` to `.env`. Keep the key on the API server; the browser never receives it. Existing process environment variables take precedence over `.env`.
+```powershell
+.venv\Scripts\python.exe tools/package_release.py
+```
 
-| Setting | Purpose / default |
-|---|---|
-| `APP_MODE` | `REVIEWER`, `LIVE_AI`, or explicitly configured `DEGRADED` |
-| `GEMINI_MODEL`, `GEMINI_API_KEY` | Model identifier and server-only key; live mode requires both and available quota |
-| `AI_TIMEOUT` | Seconds per ADK stage, capped at 40; `15` is a shorter local option, not a whole-request deadline |
-| `REQUEST_TIMEOUT`, `MAX_RETRIES` | Enterprise timeout (2 seconds) and safe-read retries (1; capped at 2) |
-| `PUBLIC_ORIGIN` | Exact browser origin; local default `http://127.0.0.1:3000`; localhost aliases are supported |
-| `COOKIE_SECURE` | `false` for local HTTP; `true` for HTTPS |
-| `APP_HOST`, `APP_PORT` | Local API bind address and port, `127.0.0.1:8080` |
-| `MOCK_HOST`, `MOCK_PORT` | Synthetic service bind address and port, `127.0.0.1:8090` |
-| `ENTERPRISE_API_BASE_URL` | Local service URL; Compose sets the private service address |
-| `DATABASE_PATH`, `STRUCTURED_LOG_PATH` | Local SQLite and JSON-lines log paths; Compose stores API state in its volume |
-| `MOCK_ALLOW_FAILURES` | Enables reviewer failure injection; the live gateway never sends reviewer overrides |
-| `MOCK_AUTH_MODE`, `MOCK_BILLING_MODE`, `MOCK_LEGACY_MODE`, `MOCK_CASE_MODE` | Optional dependency failure controls for isolated testing; see the supplied failure configuration |
-| `GOOGLE_CLOUD_PROJECT` | Optional deployment identifier; it does not deploy resources or switch the model client to Vertex AI |
-| `RELAY_API_IMAGE`, `RELAY_WEB_IMAGE` | Immutable image references used by the Google Cloud Compose overlay |
+The ZIP, checksum, and file manifest are written under `release/`. Local environment files, databases, and installed dependencies are excluded.
 
-`APP_MODE=LIVE_AI` and `GEMINI_MODEL=gemini-3.6-flash` are examples, not a guarantee of access. A 429 response means the provider rejected that request for quota/rate limits. Authentication failures and 429 responses are not retried in the same turn. Other selected transient provider errors have bounded retries within the stage deadline.
+## Deployment and current limits
 
-## Reviewing a release
+The [deployment guide](deployment/README.md) describes the single-VM Google Cloud setup, persistent storage, HTTPS, secrets, backups, and rollback. Optional Cloud Logging and Cloud Trace export is included, but actual cloud delivery and deployment have not been verified.
 
-Run `python tools/evaluate.py --mode REVIEWER` for all eight mandatory scenarios. To collect genuine Gemini evidence, run `python tools/evaluate.py --mode LIVE_AI --output evidence/current/live-gemini-evidence.json`. For low request quotas, `LIVE_EVALUATION_PAUSE=60` paces evaluation turns; this does not affect normal app response times or turn a failed result into a pass.
+Run one API process. The current account locks and SQLite setup do not establish safe operation across multiple API replicas. Sign-in and telecom services are synthetic, and no live human-support queue is connected. Connecting real customers requires real identity and enterprise integrations, protected storage and transport, and further operational and security review.
 
-The source, scenario checks, evidence and limitations are linked in [the requirement matrix](docs/REQUIREMENT_EVIDENCE_MATRIX.md) and [client review](docs/CLIENT_REVIEW.md). [The handover guide](docs/HANDOVER.md) explains extension and diagnosis. [Deployment instructions](deployment/README.md) cover the single-VM reference, health checks, backups, TLS, secrets, cost and rollback. A cloud deployment has not been performed. The demo video remains excluded from this work.
+## Further reading
 
-## Customer and safety repairs
-
-Human-review requests work independently of Gemini and return a saved reference. The demo does not assign live staff or promise callbacks. Sign-in can expire, but a fresh sign-in restores your conversation and unfinished case. Cases and duplicate protection are backed by durable account-level records; an uncertain write is checked against the existing enterprise receipt before any further action.
-
-Live factual replies are intentionally extractive: Gemini chooses from verified account statements rather than freely inventing prose. Strict-live failures never substitute Reviewer responses. Account and bill questions can include both the current plan and the actual available billing period. Plan changes, roaming additions and travel bookings are explicitly unsupported.
-
-See [the repair report](docs/REMEDIATION.md), [the original customer walkthrough](docs/RAHUL_CUSTOMER_REVIEW.md), [the customer retest](docs/CUSTOMER_RETEST.md) and [optional cloud setup](deployment/README.md). Cloud settings can stay blank until you have credits; they do not affect local Reviewer startup.
+- [Reviewer guide](docs/REVIEWER_GUIDE.md) — customer and staff walkthroughs.
+- [Architecture](docs/ARCHITECTURE.md) — components and request flow.
+- [Gemini integration](docs/GEMINI_INVOCATIONS.md) — model calls, tools, and reply validation.
+- [Gemini CX mapping](docs/GEMINI_CX_MAPPING.md) — how the implementation relates to the challenge architecture.
+- [Security](docs/SECURITY.md) — enforced controls and their limits.
+- [Handover](docs/HANDOVER.md) — maintenance, diagnosis, and extension.
+- [Customer retest](docs/CUSTOMER_RETEST.md) — observed behaviour after the repairs.

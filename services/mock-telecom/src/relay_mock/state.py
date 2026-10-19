@@ -1,4 +1,3 @@
-"""Durable receipts and hashed synthetic identities for container restarts."""
 
 import hashlib
 import json

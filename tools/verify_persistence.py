@@ -1,5 +1,3 @@
-"""Exercise restart persistence only against an explicitly selected local Reviewer stack."""
-
 import argparse
 import json
 from pathlib import Path
