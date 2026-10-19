@@ -7,8 +7,10 @@ from relay_api.infrastructure.enterprise import Denied
 from relay_api.domain.models import Chat, Confirmation
 from relay_api.infrastructure.storage import uid
 
+
 def login(client, user="alex.morgan", password="ReviewerPass-1001"):
     return client.post("/api/login", json={"username": user, "password": password})
+
 
 def test_http_auth_and_roles(stack):
     app, _, url = stack

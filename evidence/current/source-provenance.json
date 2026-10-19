@@ -1,0 +1,15 @@
+{
+  "sourceArchive": "relay-cx.zip",
+  "sourceArchiveSha256": "5548ec1b54737b6170fbda990d11e5a22bcb1671abe18962a1e951fcb614e1df",
+  "requirementsSource": "docs/challenge/ORIGINAL_CHALLENGE.md",
+  "requirementsSha256": "0049d67d41b17a04688345c7d1d3345325636371c0841a0f008532e72687a0db",
+  "originalResourcesByteIdentical": true,
+  "resourceFilesChecked": 35,
+  "frontendFilesPreserved": 29,
+  "frontendFilesChanged": [
+    "apps/web/src/components/workspace.tsx"
+  ],
+  "frontendChangeReason": "Preserve conversation/approval/draft across navigation and accurately label workspace health",
+  "gitHistoryAndInstalledDependenciesExcluded": true,
+  "inheritedEvidenceReplaced": true
+}

@@ -39,12 +39,18 @@ def create_app(engine: ResolutionService | None = None) -> FastAPI:
     async def boundary(request: Request, call_next):
         if request.method == "POST":
             try:
-                if int(request.headers.get("content-length", "0")) > 8192:
+                if not 0 <= int(request.headers.get("content-length", "0")) <= 8192:
                     return JSONResponse({"error": "invalid_body_size"}, 413)
             except ValueError:
                 return JSONResponse({"error": "invalid_request"}, 400)
             if request.headers.get("content-type", "").split(";")[0] != "application/json":
                 return JSONResponse({"error": "json_required"}, 415)
+            body = bytearray()
+            async for chunk in request.stream():
+                body.extend(chunk)
+                if len(body) > 8192:
+                    return JSONResponse({"error": "invalid_body_size"}, 413)
+            request._body = bytes(body)
             origin = request.headers.get("origin")
             expected = os.getenv("PUBLIC_ORIGIN", str(request.base_url).rstrip("/"))
             if origin and not origin_allowed(origin, expected):
@@ -69,7 +75,7 @@ def create_app(engine: ResolutionService | None = None) -> FastAPI:
 
     @app.exception_handler(IntegrationError)
     async def integration_error(request, error):
-        status = 401 if error.reason in ("http_401", "expired_identity") else 503
+        status = 401 if error.reason in ("http_401", "expired_identity", "invalid_identity") else 503
         return JSONResponse(
             {
                 "error": "authentication_failed"
@@ -190,12 +196,9 @@ def create_app(engine: ResolutionService | None = None) -> FastAPI:
     @app.get("/api/traces/{trace_id}")
     def trace(request: Request, trace_id: str):
         current = session(request)
-        events = [
-            e
-            for e in request.app.state.engine.store.events()
-            if e["traceId"] == trace_id
-            and (e["sessionId"] == current["id"] or "support-agent" in current["roles"])
-        ]
+        events = request.app.state.engine.store.trace_events(
+            trace_id, None if "support-agent" in current["roles"] else current["id"]
+        )
         return events if events else JSONResponse({"error": "not_found"}, 404)
 
     @app.get("/api/ops/{view}")

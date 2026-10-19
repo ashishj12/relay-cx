@@ -138,6 +138,7 @@ Run the project checks from the repo root:
 bun run typecheck
 bun run test:web
 bun run build
+.venv\Scripts\python.exe tools/evaluate.py --mode REVIEWER
 .venv\Scripts\python.exe tools/compliance_audit.py
 ```
 
@@ -160,3 +161,21 @@ This project is a controlled challenge/demo environment, not a production public
 ## Summary
 
 Relay CX is a local, reviewable customer-resolution platform that combines a Next.js frontend, Google ADK/Gemini-backed workflow logic, and controlled enterprise adapters to model a realistic but safe telecom support scenario.
+
+## Review and evidence
+
+Start with [the independent reviewer guide](docs/REVIEWER_GUIDE.md), [requirement matrix](docs/REQUIREMENT_EVIDENCE_MATRIX.md), [handover](docs/HANDOVER.md) and [changes](docs/CHANGES.md). The original requirements are preserved under `docs/challenge/ORIGINAL_CHALLENGE.md`; supplied fixtures/contracts remain under `resources/challenge`.
+
+`REVIEWER` replaces only AI interpretation and fact ordering; enterprise calls, authorization, confirmation and telemetry remain real. `LIVE_AI` uses native Google ADK and the configured Gemini model. `DEGRADED` is explicit deterministic fallback. The UI and workflow response identify the current mode. Only the API receives the ignored local key; active credentials must never be submitted.
+
+After configuring `GEMINI_API_KEY` and `GEMINI_MODEL` locally, collect fresh live evidence:
+
+```bash
+python tools/evaluate.py --mode LIVE_AI --output evidence/current/live-gemini-evidence.json
+```
+
+For low provider quotas set `LIVE_EVALUATION_PAUSE=65` in the shell. Fallback is not live success. Cloud resources have not been provisioned. The video remains excluded by the user's earlier instruction and is an outstanding challenge deliverable. Scores belong to the independent evaluator; no acceptance guarantee is claimed.
+
+Release workflow: run all checks, `python tools/package_release.py`, `python tools/verify_clean_release.py`, then `python tools/compliance_audit.py` and package again. To verify Docker, start `docker compose -p relay-release up --build --wait` and run `python tools/verify_containers.py`. This checks both loopback names, role isolation and all eight scenarios. The source archive has a per-file SHA-256 manifest and excludes runtime state.
+
+The release was live-verified with `gemini-3.8-flash` through native Google ADK; see `evidence/current/live-gemini-evidence.json`. Earlier quota/unavailable-model attempts remain separate evidence. Current local/runtime checks and exact source freshness are summarized in `evidence/current/verification-summary.json`.

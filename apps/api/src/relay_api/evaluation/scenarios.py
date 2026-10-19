@@ -4,6 +4,7 @@ from relay_api.core.config import CHALLENGE_ROOT
 
 ROOT = CHALLENGE_ROOT
 
+
 def run_scenario(app, scenario):
     if scenario not in [f"SCN-{i:03}" for i in range(1, 9)]:
         raise ValueError("unknown_scenario")

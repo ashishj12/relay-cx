@@ -1,0 +1,6 @@
+{
+  "model": "gemini-3.8-flash",
+  "purpose": "check provider-reported current model before another workflow attempt",
+  "listed": true,
+  "status": "AVAILABLE"
+}

@@ -1,22 +1,32 @@
 {
-  "status": "PASS",
-  "checkedAt": "2026-10-18T08:30:34.506378+00:00",
-  "backendTests": 91,
-  "frontendTests": 6,
-  "mandatoryScenarios": 8,
-  "scenarioAssertions": 160,
-  "liveRuntime": "google-adk",
-  "runtimeMatchesCleanVerification": true,
-  "evidence": {
-    "backend": "pytest.xml",
-    "scenarios": "http-scenarios.json",
-    "liveADK": "live-gemini-evidence.json",
-    "containers": "docker-verification.json",
-    "cleanInstall": "clean-verification.json",
-    "browser": "browser-verification.json",
-    "clientCredentialScan": "client-secret-scan.json"
+  "backend": {
+    "tests": 105,
+    "failures": 0
   },
-  "demoVideo": "EXCLUDED by user request",
-  "cloudDeployment": "PREPARED, NOT DEPLOYED",
-  "independentQualificationScore": null
+  "reviewer": "PASS",
+  "docker": "PASS",
+  "cleanInstall": "PASS",
+  "testedRuntimeFiles": 89,
+  "runtimeMatchesCleanSource": true,
+  "runtimeDrift": [],
+  "liveGemini": "PASS",
+  "providerAvailability": {
+    "status": "AVAILABLE",
+    "model": "gemini-3.8-flash",
+    "liveWorkflowStatus": "PASS",
+    "successfulStages": 6,
+    "nativeAdkTools": [
+      "diagnose_service",
+      "read_account"
+    ],
+    "scope": "Five authenticated live HTTP workflow turns, six real model stages, no fallback"
+  },
+  "requirements": {
+    "PASS": 445,
+    "EXCLUDED": 11
+  },
+  "qualification": "BLOCKED: independent evaluator scores remain required; no self-assigned score",
+  "cloudDeployed": false,
+  "demoVideo": "EXCLUDED_BY_USER",
+  "independentScore": null
 }

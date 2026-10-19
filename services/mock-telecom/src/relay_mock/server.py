@@ -1,3 +1,6 @@
+import hmac
+import secrets
+import threading
 import json
 import os
 import time
@@ -20,6 +23,8 @@ BILLING = load("billing.json")["billing"]
 OUTAGES = load("network-status.json")["outages"]
 CASES = {}
 KEYS = {}
+TOKENS = {}
+CASE_LOCK = threading.Lock()
 
 
 def find(xs, k, v):
@@ -30,6 +35,8 @@ class H(BaseHTTPRequestHandler):
     def handle(self):
         try:
             super().handle()
+        except ValueError:
+            self.js(400, {"error": "invalid_request"})
         except (ConnectionError, TimeoutError):
             pass  # expected when a failure-simulation client times out
 
@@ -55,18 +62,59 @@ class H(BaseHTTPRequestHandler):
     def body(self):
         return self.rfile.read(int(self.headers.get("Content-Length", "0")))
 
+    def identity(self):
+        value = self.headers.get("Authorization", "")
+        token = value.removeprefix("Bearer ") if value.startswith("Bearer ") else ""
+        record = TOKENS.get(token)
+        if not record or record["expires"] <= time.time():
+            self.js(401, {"error": "enterprise_authentication_required"})
+            return None
+        return record["customer"]
+
+    def owns(self, customer, *, account=None, service=None, postal=None, customer_id=None):
+        allowed = (
+            "customer" in customer["roles"]
+            and (account is None or account == customer.get("accountId"))
+            and (customer_id is None or customer_id == customer["customerId"])
+        )
+        if service is not None:
+            record = find(ACCOUNTS, "accountId", customer.get("accountId")) or {}
+            allowed = allowed and service in {s["serviceId"] for s in record.get("services", [])}
+        if postal is not None:
+            allowed = allowed and postal == customer.get("postalCode")
+        if not allowed:
+            self.js(403, {"error": "enterprise_access_denied"})
+        return allowed
+
     def do_GET(self):
         p = urlparse(self.path)
         a = p.path.strip("/").split("/")
         if p.path == "/health":
             return self.js(200, {"status": "ok"})
+        customer = self.identity()
+        if customer is None:
+            return
         if len(a) == 3 and a[:2] == ["api", "customers"]:
+            if not self.owns(customer, customer_id=a[2]):
+                return
             x = find(CUSTOMERS, "customerId", a[2])
-            return self.js(200, x) if x else self.js(404, {"error": "not_found"})
+            return (
+                self.js(200, {k: v for k, v in x.items() if k not in {"username", "testPassword", "email"}})
+                if x
+                else self.js(404, {"error": "not_found"})
+            )
         if len(a) == 3 and a[:2] == ["api", "accounts"]:
+            if not self.owns(customer, account=a[2]):
+                return
             x = find(ACCOUNTS, "accountId", a[2])
-            return self.js(200, x) if x else self.js(404, {"error": "not_found"})
+            return (
+                self.js(200, {k: v for k, v in x.items() if k not in {"username", "testPassword", "email"}})
+                if x
+                else self.js(404, {"error": "not_found"})
+            )
         if len(a) == 4 and a[:2] == ["api", "accounts"] and a[3] == "billing":
+            if not self.owns(customer, account=a[2]):
+                return
             m = self.mode("billing", "success")
             if m == "timeout":
                 time.sleep(8)
@@ -75,9 +123,15 @@ class H(BaseHTTPRequestHandler):
             if m == "malformed":
                 return self.js(200, {"unexpected": True})
             x = find(BILLING, "accountId", a[2])
-            return self.js(200, x) if x else self.js(404, {"error": "not_found"})
+            return (
+                self.js(200, {k: v for k, v in x.items() if k not in {"username", "testPassword", "email"}})
+                if x
+                else self.js(404, {"error": "not_found"})
+            )
         if p.path == "/api/network/outages":
             pc = parse_qs(p.query).get("postalCode", [""])[0]
+            if not self.owns(customer, postal=pc):
+                return
             return self.js(200, find(OUTAGES, "postalCode", pc) or {"postalCode": pc, "status": "unknown"})
         return self.js(404, {"error": "not_found"})
 
@@ -92,39 +146,57 @@ class H(BaseHTTPRequestHandler):
                 (
                     x
                     for x in CUSTOMERS
-                    if x.get("username") == d.get("username") and x.get("testPassword") == d.get("password")
+                    if x.get("username") == d.get("username")
+                    and hmac.compare_digest(
+                        x.get("testPassword", "").encode("utf-8"), d.get("password", "").encode("utf-8")
+                    )
                 ),
                 None,
             )
             if not c:
                 return self.js(401, {"error": "invalid_credentials"})
+            token = secrets.token_urlsafe(32)
+            TOKENS[token] = {"customer": c, "expires": time.time() + (0 if m == "expired" else 3600)}
             return self.js(
                 200,
                 {
-                    "accessToken": "expired" if m == "expired" else "synthetic-" + c["customerId"],
+                    "accessToken": token,
                     "customerId": c["customerId"],
                     "accountId": c.get("accountId"),
                     "roles": c["roles"],
                     "expiresIn": 0 if m == "expired" else 3600,
                 },
             )
+        customer = self.identity()
+        if customer is None:
+            return
         if p.path == "/api/support-cases":
             # Consume the POST before replying, including simulated failures, to avoid TCP resets.
             body = self.body()
             if self.mode("case", "success") == "unavailable":
                 return self.js(503, {"error": "case_unavailable"})
             d = json.loads(body or b"{}")
+            if set(d) != {"customerId", "accountId", "summary", "idempotencyKey"}:
+                return self.js(400, {"error": "invalid_case_request"})
+            if not self.owns(customer, account=d.get("accountId"), customer_id=d.get("customerId")):
+                return
+            if not isinstance(d.get("summary"), str) or not 1 <= len(d["summary"]) <= 2000:
+                return self.js(400, {"error": "invalid_case_summary"})
             k = d.get("idempotencyKey")
             if not k:
                 return self.js(400, {"error": "idempotency_key_required"})
-            if k in KEYS:
-                return self.js(409, {"error": "duplicate", "caseId": KEYS[k]})
-            cid = "CASE-" + uuid.uuid4().hex[:8].upper()
-            KEYS[k] = cid
-            CASES[cid] = {"caseId": cid, "status": "open", **d}
+            with CASE_LOCK:
+                key = (customer["customerId"], k)
+                if key in KEYS:
+                    return self.js(409, {"error": "duplicate", "caseId": KEYS[key]})
+                cid = "CASE-" + uuid.uuid4().hex[:8].upper()
+                KEYS[key] = cid
+                CASES[cid] = {"caseId": cid, "status": "open", **d}
             return self.js(201, CASES[cid])
         if p.path == "/api/diagnostics":
             d = json.loads(self.body() or b"{}")
+            if not self.owns(customer, service=d.get("serviceId", "")):
+                return
             return self.js(
                 200,
                 {
@@ -148,6 +220,8 @@ class H(BaseHTTPRequestHandler):
                     svc = r.findtext("ServiceNumber")
                 except Exception:
                     acct = svc = ""
+                if not self.owns(customer, account=acct, service=svc):
+                    return
                 code = "0" if acct == "ACC-2001" and svc == "SVC-5001" else "101"
                 raw = (
                     "<SubscriberStatusResponse><ACCT_NO>"

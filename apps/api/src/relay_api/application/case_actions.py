@@ -8,6 +8,7 @@ from relay_api.infrastructure.storage import uid
 if TYPE_CHECKING:
     from relay_api.application.workflows import ResolutionService
 
+
 class CaseActions:
     def __init__(self, workflow: "ResolutionService") -> None:
         self.workflow = workflow

@@ -1,0 +1,7 @@
+{
+  "purpose": "quota diagnosis",
+  "model": "gemini-3.5-flash",
+  "status": "UNAVAILABLE",
+  "httpStatus": 429,
+  "quotaLimits": []
+}

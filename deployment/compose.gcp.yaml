@@ -1,0 +1,24 @@
+# Use with compose.yaml, --env-file /etc/relay/runtime.env and --no-build.
+# Operator must provision the VM/disk/registry/secret and pin immutable digests.
+services:
+  enterprise:
+    image: ${RELAY_API_IMAGE:?Set RELAY_API_IMAGE to the pushed API image digest}
+    environment:
+      MOCK_ALLOW_FAILURES: "false"
+    restart: unless-stopped
+  api:
+    image: ${RELAY_API_IMAGE:?Set RELAY_API_IMAGE to the pushed API image digest}
+    environment:
+      APP_MODE: LIVE_AI
+      COOKIE_SECURE: "true"
+      PUBLIC_ORIGIN: ${PUBLIC_ORIGIN:?Set the exact HTTPS browser origin}
+    volumes:
+      - type: bind
+        source: /srv/relay/data
+        target: /app/data
+    stop_grace_period: 90s
+  web:
+    image: ${RELAY_WEB_IMAGE:?Set RELAY_WEB_IMAGE to the pushed web image digest}
+    environment:
+      PUBLIC_ORIGIN: ${PUBLIC_ORIGIN:?Set the exact HTTPS browser origin}
+    # Inherits loopback-only port 3000. A host TLS reverse proxy is required.

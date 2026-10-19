@@ -4,6 +4,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2] / "resources/challenge"
 
+
 class T(unittest.TestCase):
     def test_scenarios(self):
         for i in range(1, 9):

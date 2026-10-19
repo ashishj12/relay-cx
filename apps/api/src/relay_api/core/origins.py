@@ -1,5 +1,6 @@
 from urllib.parse import urlsplit
 
+
 def origin_allowed(origin: str, configured_origin: str) -> bool:
     if origin == configured_origin:
         return True

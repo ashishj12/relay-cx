@@ -44,19 +44,3 @@ def load_environment(path=None):
                 value = value[1:-1]
             if value:
                 os.environ.setdefault(key, value)
-    if os.name == "nt":
-        import winreg
-
-        try:
-            with winreg.OpenKey(winreg.HKEY_CURRENT_USER, "Environment") as env:
-                for key in ("GEMINI_API_KEY", "GEMINI_MODEL", "GOOGLE_CLOUD_PROJECT"):
-                    if os.getenv(key):
-                        continue
-                    try:
-                        value, _ = winreg.QueryValueEx(env, key)
-                    except OSError:
-                        continue
-                    if isinstance(value, str) and value:
-                        os.environ[key] = value
-        except OSError:
-            pass

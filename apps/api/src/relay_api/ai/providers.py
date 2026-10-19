@@ -1,5 +1,7 @@
+import os
 import re
 from relay_api.domain.models import Interpretation
+
 
 def provider_reason(error):
     if isinstance(error, TimeoutError):
@@ -13,11 +15,18 @@ def provider_reason(error):
         return "provider_http_" + str(code)
     return "provider_unavailable"
 
+
 def redact(text):
+    configured = os.getenv("GEMINI_API_KEY", "")
+    if configured:
+        text = text.replace(configured, "[REDACTED]")
+    text = re.sub(r"(?i)Bearer\s+[A-Za-z0-9_.~-]+", "Bearer [REDACTED]", text)
+    text = re.sub(r"\b(?:AIza|AQ\.)[A-Za-z0-9_-]{20,}", "[REDACTED]", text)
     text = re.sub(r"(?i)(password|token|secret|api[_ -]?key)\s*[:=]?\s*\S+", r"\1 [REDACTED]", text)
     text = re.sub(r"ReviewerPass-\S+", "[REDACTED]", text)
     text = re.sub(r"\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b", "[EMAIL]", text, flags=re.I)
     return text
+
 
 class Reviewer:
     def interpret(self, messages):

@@ -120,7 +120,7 @@ export function Workspace() {
           <div className="topbar-right">
             <span className="service-status">
               <span className={`signal-dot ${online ? "" : "offline"}`} />
-              {online ? "Services connected" : "Service unavailable"}
+              {online ? "Workspace online" : "Service unavailable"}
             </span>
             <ModeBadge mode={session.mode} />
             <button
@@ -147,14 +147,16 @@ export function Workspace() {
               deterministic workflow controls and verified enterprise records.
             </div>
           )}
-          {view === "support" ? (
+          {/* Keep an in-flight conversation mounted while inspecting other views. */}
+          <div hidden={view !== "support"}>
             <Conversation
               key={session.customerId}
               session={session}
               onMode={onMode}
               onTrace={setTrace}
             />
-          ) : view === "agents" ? (
+          </div>
+          {view === "support" ? null : view === "agents" ? (
             <AgentWorkspace session={session} onTrace={setTrace} />
           ) : view === "operations" ? (
             <OperationsWorkspace session={session} onTrace={setTrace} />

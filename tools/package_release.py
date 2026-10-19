@@ -1,6 +1,7 @@
 import hashlib
 import json
 import os
+import re
 from pathlib import Path
 import sys
 import zipfile
@@ -31,7 +32,7 @@ FILES = (
     ".gitignore",
     ".env.example",
 )
-EXCLUDED = {"node_modules", ".next", "__pycache__", ".pytest_cache", ".ruff_cache", ".local"}
+EXCLUDED = {"node_modules", ".next", "__pycache__", ".pytest_cache", ".ruff_cache", ".local", ".git", ".venv"}
 
 
 def source_files():
@@ -46,7 +47,8 @@ def source_files():
             for p in files
             if not any(part in EXCLUDED or part.endswith(".egg-info") for part in p.relative_to(ROOT).parts)
             and p.suffix not in {".pyc", ".mp4", ".zip", ".tsbuildinfo"}
-            and p.name not in {".env", "pnpm-lock.yaml"}
+            and (not p.name.startswith(".env") or p.name == ".env.example")
+            and p.name not in {"pnpm-lock.yaml"}
         },
         key=lambda p: p.relative_to(ROOT).as_posix(),
     )
@@ -62,6 +64,10 @@ def package():
         body = p.read_bytes()
         if p.is_symlink() or (secret and secret in body):
             raise ValueError("Release rejected: symlink or configured secret in " + name)
+        if p.suffix in {".py", ".ts", ".tsx", ".md", ".json", ".yaml", ".yml", ".txt"} and re.search(
+            rb"\b(?:AIza|AQ\.)[A-Za-z0-9_-]{30,}", body
+        ):
+            raise ValueError("Release rejected: possible active API credential in " + name)
         if p.suffix in {".sqlite", ".db", ".exe", ".dll", ".pem", ".key"}:
             raise ValueError("Unexpected runtime/secret file: " + name)
         members[name] = body

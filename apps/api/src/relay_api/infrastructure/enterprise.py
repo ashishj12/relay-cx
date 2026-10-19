@@ -1,3 +1,4 @@
+from datetime import datetime
 import json
 import os
 import time
@@ -8,12 +9,26 @@ import xml.etree.ElementTree as ET
 from pydantic import ValidationError
 from relay_api.domain.models import Auth, Profile, Account, Billing, Outage, Diagnostic, Case
 
+
+def unique_object(pairs):
+    result = {}
+    for key, value in pairs:
+        if key in result:
+            raise ValueError("duplicate_json_field")
+        result[key] = value
+    return result
+
+
 class IntegrationError(Exception):
     def __init__(self, service, reason, temporary=False):
         self.service, self.reason, self.temporary = service, reason, temporary
         super().__init__(service + ":" + reason)
+
+
 class Denied(Exception):
     pass
+
+
 class Gateway:
     def __init__(self, store, base, timeout=2, retries=1):
         self.store, self.base, self.timeout, self.retries = store, base.rstrip("/"), timeout, retries
@@ -58,6 +73,11 @@ class Gateway:
                 }
                 if s.get("failures") and os.getenv("APP_MODE", "REVIEWER") == "REVIEWER":
                     headers["X-Reviewer-Failures"] = json.dumps(s["failures"])
+                if name not in ("authentication", "health"):
+                    token = s.get("enterpriseToken")
+                    if not token or "\r" in token or "\n" in token:
+                        raise IntegrationError(name, "enterprise_identity_missing")
+                    headers["Authorization"] = "Bearer " + token
                 body = (
                     payload.encode() if xml else json.dumps(payload).encode() if payload is not None else None
                 )
@@ -66,7 +86,7 @@ class Gateway:
                     raw = response.read(262145)
                 if len(raw) > 262144:
                     raise ValueError("oversized")
-                result = raw if xml else json.loads(raw)
+                result = raw if xml else json.loads(raw, object_pairs_hook=unique_object)
                 if schema:
                     result = schema.model_validate(result)
                 if normalize:
@@ -296,6 +316,12 @@ def parse_legacy(raw, account, service):
     network = fields["NET_STAT"].lower()
     if not status or network not in ("normal", "degraded", "outage"):
         fail("unknown_status")
+    try:
+        observed = datetime.fromisoformat(fields["RESP_TS"].replace("Z", "+00:00"))
+        if observed.tzinfo is None:
+            fail("invalid_timestamp")
+    except ValueError:
+        fail("invalid_timestamp")
     return {"subscriberStatus": status, "networkStatus": network, "observedAt": fields["RESP_TS"]}
 
 

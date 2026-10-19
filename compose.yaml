@@ -14,6 +14,10 @@ services:
       retries: 12
     networks: [backend]
     restart: unless-stopped
+    init: true
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    pids_limit: 256
   api:
     build:
       context: .
@@ -25,6 +29,8 @@ services:
       GEMINI_MODEL: ${GEMINI_MODEL:-}
       GEMINI_API_KEY: ${GEMINI_API_KEY:-}
       AI_TIMEOUT: ${AI_TIMEOUT:-40}
+      REQUEST_TIMEOUT: ${REQUEST_TIMEOUT:-2}
+      MAX_RETRIES: ${MAX_RETRIES:-1}
       PUBLIC_ORIGIN: ${PUBLIC_ORIGIN:-http://127.0.0.1:3000}
       COOKIE_SECURE: ${COOKIE_SECURE:-false}
     volumes: ["cx-data:/app/data"]
@@ -38,6 +44,10 @@ services:
       retries: 12
     networks: [backend, egress]
     restart: unless-stopped
+    init: true
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    pids_limit: 256
   web:
     build:
       context: .
@@ -51,6 +61,10 @@ services:
         condition: service_healthy
     networks: [backend, egress]
     restart: unless-stopped
+    init: true
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    pids_limit: 256
 volumes:
   cx-data:
 networks:

@@ -1,107 +1,40 @@
 {
   "status": "PASS",
-  "isolatedSource": "C:\\Users\\mukes\\OneDrive\\Documents\\ChatGPT\\Customer Experience Resolution System\\.local\\clean-1792311824\\relay-cx",
+  "isolatedSource": "C:\\Users\\mukes\\OneDrive\\Documents\\ChatGPT\\Customer Experience Resolution System\\.local\\updated-review\\.local\\clean-1792341397\\relay-cx",
   "credentialsPresent": false,
-  "commands": [
-    {
-      "command": "C:\\Users\\mukes\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python.exe -m venv C:\\Users\\mukes\\OneDrive\\Documents\\ChatGPT\\Customer Experience Resolution System\\.local\\clean-1792311824\\relay-cx\\.venv",
-      "exitCode": 0,
-      "output": ""
-    },
-    {
-      "command": "C:\\Users\\mukes\\OneDrive\\Documents\\ChatGPT\\Customer Experience Resolution System\\.local\\clean-1792311824\\relay-cx\\.venv\\Scripts\\python.exe -m pip install -r requirements-dev.txt",
-      "exitCode": 0,
-      "output": "ock (line 41))\n  Using cached sniffio-1.3.1-py3-none-any.whl.metadata (3.9 kB)\nCollecting starlette==1.8.0 (from -r C:\\Users\\mukes\\OneDrive\\Documents\\ChatGPT\\Customer Experience Resolution System\\.local\\clean-1792311824\\relay-cx\\apps\\api\\requirements.lock (line 42))\n  Using cached starlette-1.8.0-py3-none-any.whl.metadata (6.6 kB)\nCollecting tenacity==9.1.4 (from -r C:\\Users\\mukes\\OneDrive\\Documents\\ChatGPT\\Customer Experience Resolution System\\.local\\clean-1792311824\\relay-cx\\apps\\api\\requirements.lock (line 43))\n  Using cached tenacity-9.1.4-py3-none-any.whl.metadata (1.2 kB)\nCollecting typing-extensions==4.16.0 (from -r C:\\Users\\mukes\\OneDrive\\Documents\\ChatGPT\\Customer Experience Resolution System\\.local\\clean-1792311824\\relay-cx\\apps\\api\\requirements.lock (line 44))\n  Using cached typing_extensions-4.16.0-py3-none-any.whl.metadata (3.3 kB)\nCollecting typing-inspection==0.4.4 (from -r C:\\Users\\mukes\\OneDrive\\Documents\\ChatGPT\\Customer Experience Resolution System\\.local\\clean-1792311824\\relay-cx\\apps\\api\\requirements.lock (line 45))\n  Using cached typing_inspection-0.4.4-py3-none-any.whl.metadata (2.6 kB)\nCollecting urllib3==2.8.0 (from -r C:\\Users\\mukes\\OneDrive\\Documents\\ChatGPT\\Customer Experience Resolution System\\.local\\clean-1792311824\\relay-cx\\apps\\api\\requirements.lock (line 46))\n  Using cached urllib3-2.8.0-py3-none-any.whl.metadata (7.4 kB)\nCollecting uvicorn==0.54.0 (from -r C:\\Users\\mukes\\OneDrive\\Documents\\ChatGPT\\Customer Experience Resolution System\\.local\\clean-1792311824\\relay-cx\\apps\\api\\requirements.lock (line 47))\n  Using cached uvicorn-0.54.0-py3-none-any.whl.metadata (6.6 kB)\nCollecting watchdog==6.0.0 (from -r C:\\Users\\mukes\\OneDrive\\Documents\\ChatGPT\\Customer Experience Resolution System\\.local\\clean-1792311824\\relay-cx\\apps\\api\\requirements.lock (line 48))\n  Using cached watchdog-6.0.0-py3-none-win_amd64.whl.metadata (44 kB)\nCollecting websockets==15.0.1 (from -r C:\\Users\\mukes\\OneDrive\\Documents\\ChatGPT\\Customer Experience Resolution System\\.local\\clean-1792311824\\relay-cx\\apps\\api\\requirements.lock (line 49))\n  Using cached websockets-15.0.1-cp312-cp312-win_amd64.whl.metadata (7.0 kB)\nCollecting pytest==9.1.1 (from -r requirements-dev.txt (line 2))\n  Using cached pytest-9.1.1-py3-none-any.whl.metadata (7.6 kB)\nCollecting ruff==0.17.1 (from -r requirements-dev.txt (line 3))\n  Using cached ruff-0.17.1-py3-none-win_amd64.whl.metadata (21 kB)\nCollecting colorama>=0.4 (from pytest==9.1.1->-r requirements-dev.txt (line 2))\n  Using cached colorama-0.4.6-py2.py3-none-any.whl.metadata (17 kB)\nCollecting iniconfig>=1.0.1 (from pytest==9.1.1->-r requirements-dev.txt (line 2))\n  Using cached iniconfig-2.3.1-py3-none-any.whl.metadata (2.8 kB)\nCollecting pluggy<2,>=1.5 (from pytest==9.1.1->-r requirements-dev.txt (line 2))\n  Using cached pluggy-1.7.0-py3-none-any.whl.metadata (5.0 kB)\nCollecting pygments>=2.7.2 (from pytest==9.1.1->-r requirements-dev.txt (line 2))\n  Using cached pygments-2.21.0-py3-none-any.whl.metadata (2.5 kB)\nUsing cached aiosqlite-0.22.1-py3-none-any.whl (17 kB)\nUsing cached annotated_doc-0.0.5-py3-none-any.whl (5.3 kB)\nUsing cached annotated_types-0.8.0-py3-none-any.whl (13 kB)\nUsing cached anyio-4.15.1-py3-none-any.whl (132 kB)\nUsing cached attrs-26.1.0-py3-none-any.whl (67 kB)\nUsing cached authlib-1.9.1-py2.py3-none-any.whl (266 kB)\nUsing cached certifi-2026.7.22-py3-none-any.whl (136 kB)\nUsing cached cffi-2.1.1-cp312-cp312-win_amd64.whl (185 kB)\nUsing cached charset_normalizer-3.5.2-cp312-cp312-win_amd64.whl (207 kB)\nUsing cached click-8.5.0-py3-none-any.whl (125 kB)\nUsing cached cryptography-50.0.2-cp311-abi3-win_amd64.whl (3.8 MB)\nUsing cached distro-1.9.0-py3-none-any.whl (20 kB)\nUsing cached fastapi-0.141.1-py3-none-any.whl (131 kB)\nUsing cached google_adk-2.12.0-py3-none-any.whl (5.0 MB)\nUsing cached google_auth-2.62.0-py3-none-any.whl (267 kB)\nUsing cached google_genai-2.31.0-py3-none-any.whl (1.2 MB)\nUsing cached graphviz-0.21-py3-none-any.whl (47 kB)\nUsing cached h11-0.16.0-py3-none-any.whl (37 kB)\nUsing cached httpcore-1.0.9-py3-none-any.whl (78 kB)\nUsing cached httpx-0.28.1-py3-none-any.whl (73 kB)\nUsing cached idna-3.20-py3-none-any.whl (69 kB)\nUsing cached joserfc-1.7.5-py3-none-any.whl (71 kB)\nUsing cached jsonschema-4.26.0-py3-none-any.whl (90 kB)\nUsing cached jsonschema_specifications-2025.9.1-py3-none-any.whl (18 kB)\nUsing cached opentelemetry_api-1.42.1-py3-none-any.whl (61 kB)\nUsing cached opentelemetry_sdk-1.42.1-py3-none-any.whl (170 kB)\nUsing cached opentelemetry_semantic_conventions-0.63b1-py3-none-any.whl (203 kB)\nUsing cached packaging-26.3-py3-none-any.whl (129 kB)\nUsing cached pyasn1-0.6.4-py3-none-any.whl (84 kB)\nUsing cached pyasn1_modules-0.4.2-py3-none-any.whl (181 kB)\nUsing cached pycparser-3.11-py3-none-any.whl (51 kB)\nUsing cached pydantic-2.14.1-py3-none-any.whl (488 kB)\nUsing cached pydantic_core-2.50.1-cp312-cp312-win_amd64.whl (2.2 MB)\nUsing cached python_dotenv-1.2.4-py3-none-any.whl (23 kB)\nUsing cached python_multipart-0.0.32-py3-none-any.whl (30 kB)\nUsing cached pyyaml-6.0.3-cp312-cp312-win_amd64.whl (154 kB)\nUsing cached referencing-0.37.0-py3-none-any.whl (26 kB)\nUsing cached requests-2.34.2-py3-none-any.whl (73 kB)\nUsing cached rpds_py-2026.9.1-cp312-cp312-win_amd64.whl (222 kB)\nUsing cached sniffio-1.3.1-py3-none-any.whl (10 kB)\nUsing cached starlette-1.8.0-py3-none-any.whl (79 kB)\nUsing cached tenacity-9.1.4-py3-none-any.whl (28 kB)\nUsing cached typing_extensions-4.16.0-py3-none-any.whl (45 kB)\nUsing cached typing_inspection-0.4.4-py3-none-any.whl (14 kB)\nUsing cached urllib3-2.8.0-py3-none-any.whl (135 kB)\nUsing cached uvicorn-0.54.0-py3-none-any.whl (87 kB)\nUsing cached watchdog-6.0.0-py3-none-win_amd64.whl (79 kB)\nUsing cached websockets-15.0.1-cp312-cp312-win_amd64.whl (176 kB)\nUsing cached pytest-9.1.1-py3-none-any.whl (386 kB)\nUsing cached ruff-0.17.1-py3-none-win_amd64.whl (10.1 MB)\nUsing cached colorama-0.4.6-py2.py3-none-any.whl (25 kB)\nUsing cached iniconfig-2.3.1-py3-none-any.whl (7.6 kB)\nUsing cached pluggy-1.7.0-py3-none-any.whl (27 kB)\nUsing cached pygments-2.21.0-py3-none-any.whl (1.3 MB)\nInstalling collected packages: websockets, watchdog, urllib3, typing-extensions, tenacity, sniffio, ruff, rpds-py, pyyaml, python-multipart, python-dotenv, pygments, pycparser, pyasn1, pluggy, packaging, iniconfig, idna, h11, graphviz, distro, colorama, click, charset-normalizer, certifi, attrs, annotated-types, annotated-doc, aiosqlite, uvicorn, typing-inspection, requests, referencing, pytest, pydantic-core, pyasn1-modules, opentelemetry-api, httpcore, cffi, anyio, starlette, pydantic, opentelemetry-semantic-conventions, jsonschema-specifications, httpx, cryptography, opentelemetry-sdk, jsonschema, joserfc, google-auth, fastapi, authlib, google-genai, google-adk\nSuccessfully installed aiosqlite-0.22.1 annotated-doc-0.0.5 annotated-types-0.8.0 anyio-4.15.1 attrs-26.1.0 authlib-1.9.1 certifi-2026.7.22 cffi-2.1.1 charset-normalizer-3.5.2 click-8.5.0 colorama-0.4.6 cryptography-50.0.2 distro-1.9.0 fastapi-0.141.1 google-adk-2.12.0 google-auth-2.62.0 google-genai-2.31.0 graphviz-0.21 h11-0.16.0 httpcore-1.0.9 httpx-0.28.1 idna-3.20 iniconfig-2.3.1 joserfc-1.7.5 jsonschema-4.26.0 jsonschema-specifications-2025.9.1 opentelemetry-api-1.42.1 opentelemetry-sdk-1.42.1 opentelemetry-semantic-conventions-0.63b1 packaging-26.3 pluggy-1.7.0 pyasn1-0.6.4 pyasn1-modules-0.4.2 pycparser-3.11 pydantic-2.14.1 pydantic-core-2.50.1 pygments-2.21.0 pytest-9.1.1 python-dotenv-1.2.4 python-multipart-0.0.32 pyyaml-6.0.3 referencing-0.37.0 requests-2.34.2 rpds-py-2026.9.1 ruff-0.17.1 sniffio-1.3.1 starlette-1.8.0 tenacity-9.1.4 typing-extensions-4.16.0 typing-inspection-0.4.4 urllib3-2.8.0 uvicorn-0.54.0 watchdog-6.0.0 websockets-15.0.1\n\n[notice] A new release of pip is available: 25.0.1 -> 26.2.1\n[notice] To update, run: C:\\Users\\mukes\\OneDrive\\Documents\\ChatGPT\\Customer Experience Resolution System\\.local\\clean-1792311824\\relay-cx\\.venv\\Scripts\\python.exe -m pip install --upgrade pip\n"
-    },
-    {
-      "command": "C:\\Users\\mukes\\.bun\\bin\\bun.EXE install --frozen-lockfile",
-      "exitCode": 0,
-      "output": "bun install v1.3.14 (0d9b296a)\n\n70 packages installed [19.10s]\n"
-    },
-    {
-      "command": "C:\\Users\\mukes\\OneDrive\\Documents\\ChatGPT\\Customer Experience Resolution System\\.local\\clean-1792311824\\relay-cx\\.venv\\Scripts\\python.exe -m pytest -q",
-      "exitCode": 0,
-      "output": "........................................................................ [ 79%]\n...................                                                      [100%]\n============================== warnings summary ===============================\ntests/integration/test_adk_agents.py::test_adk_runner_calls_authorized_account_tool\n  C:\\Users\\mukes\\OneDrive\\Documents\\ChatGPT\\Customer Experience Resolution System\\.local\\clean-1792311824\\relay-cx\\.venv\\Lib\\site-packages\\google\\adk\\models\\llm_request.py:306: UserWarning: [EXPERIMENTAL] feature FeatureName.JSON_SCHEMA_FOR_FUNC_DECL is enabled.\n    declaration = tool._get_declaration()\n\n-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html\n91 passed, 1 warning in 42.77s\n"
-    },
-    {
-      "command": "C:\\Users\\mukes\\OneDrive\\Documents\\ChatGPT\\Customer Experience Resolution System\\.local\\clean-1792311824\\relay-cx\\.venv\\Scripts\\python.exe tools/evaluate.py --mode REVIEWER",
-      "exitCode": 0,
-      "output": "SCN-001 PASS 17 checks\nSCN-002 PASS 21 checks\nSCN-003 PASS 17 checks\nSCN-004 PASS 30 checks\nSCN-005 PASS 14 checks\nSCN-006 PASS 17 checks\nSCN-007 PASS 25 checks\nSCN-008 PASS 19 checks\nREVIEWER PASS\n"
-    },
-    {
-      "command": "C:\\Users\\mukes\\.bun\\bin\\bun.EXE run test:web",
-      "exitCode": 0,
-      "output": "$ bun test apps/web/src\nbun test v1.3.14 (0d9b296a)\n\napps\\web\\src\\lib\\proxy-policy.test.ts:\n(pass) same-origin gateway boundary > allows only supported business routes and bound trace identifiers [0.96ms]\n(pass) same-origin gateway boundary > rejects arbitrary endpoints, traversal and URL injection [0.57ms]\n(pass) checks the public host instead of the internal Next.js bind address [0.52ms]\n\napps\\web\\src\\features\\auth\\session.test.ts:\n(pass) accepts the complete login and restored-session contract [0.47ms]\n(pass) rejects partial responses before rendering the signed-in workspace [0.25ms]\n\n 5 pass\n 0 fail\n 26 expect() calls\nRan 5 tests across 2 files. [199.00ms]\n"
-    },
-    {
-      "command": "C:\\Users\\mukes\\.bun\\bin\\bun.EXE run typecheck",
-      "exitCode": 0,
-      "output": "$ bun run --cwd apps/web typecheck\n$ tsc --noEmit\n"
-    },
-    {
-      "command": "C:\\Users\\mukes\\.bun\\bin\\bun.EXE run build",
-      "exitCode": 0,
-      "output": "$ bun run --cwd apps/web build\n$ bun --bun next build\n\u25b2 Next.js 16.4.2 (Turbopack)\n\u2713 Running next.config.ts took 269ms\n\n  Creating an optimized production build ...\n\u2713 Compiled successfully in 4.1s\n  Running TypeScript ...\n  Finished TypeScript in 1050ms ...\n  Collecting page data using 5 workers ...\n  Generating static pages using 5 workers (0/3) ...\n\u2713 Generating static pages using 5 workers (3/3) in 1073ms\n  Finalizing page optimization ...\n\nRoute (app)\n\u250c \u25cb /\n\u251c \u25cb /_not-found\n\u2514 \u0192 /api/[...path]\n\n\n\u25cb  (Static)   prerendered as static content\n\u0192  (Dynamic)  server-rendered on demand\n\n"
-    }
-  ],
-  "finalSourceRefresh": {
-    "note": "Refreshed source from final candidate; retained dependencies installed in the clean run because both dependency lockfiles are unchanged. Re-ran all backend and frontend checks.",
-    "archiveSHA256": "6932c729ab0f6ac0540846e35e976ffb8790b8ddd5adebf09d9b6a09b333d618",
-    "commands": [
-      {
-        "command": "C:\\Users\\mukes\\OneDrive\\Documents\\ChatGPT\\Customer Experience Resolution System\\.local\\clean-1792311824\\relay-cx\\.venv\\Scripts\\python.exe -m pytest -q",
-        "exitCode": 0,
-        "output": "........................................................................ [ 79%]\n...................                                                      [100%]\n============================== warnings summary ===============================\ntests/integration/test_adk_agents.py::test_adk_runner_calls_authorized_account_tool\n  C:\\Users\\mukes\\OneDrive\\Documents\\ChatGPT\\Customer Experience Resolution System\\.local\\clean-1792311824\\relay-cx\\.venv\\Lib\\site-packages\\google\\adk\\models\\llm_request.py:306: UserWarning: [EXPERIMENTAL] feature FeatureName.JSON_SCHEMA_FOR_FUNC_DECL is enabled.\n    declaration = tool._get_declaration()\n\n-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html\n91 passed, 1 warning in 42.70s\n"
-      },
-      {
-        "command": "C:\\Users\\mukes\\OneDrive\\Documents\\ChatGPT\\Customer Experience Resolution System\\.local\\clean-1792311824\\relay-cx\\.venv\\Scripts\\python.exe tools/evaluate.py --mode REVIEWER",
-        "exitCode": 0,
-        "output": "SCN-001 PASS 17 checks\nSCN-002 PASS 21 checks\nSCN-003 PASS 17 checks\nSCN-004 PASS 30 checks\nSCN-005 PASS 14 checks\nSCN-006 PASS 17 checks\nSCN-007 PASS 25 checks\nSCN-008 PASS 19 checks\nREVIEWER PASS\n"
-      },
-      {
-        "command": "C:\\Users\\mukes\\.bun\\bin\\bun.EXE run test:web",
-        "exitCode": 0,
-        "output": "$ bun test apps/web/src\nbun test v1.3.14 (0d9b296a)\n\napps\\web\\src\\lib\\proxy-policy.test.ts:\n(pass) same-origin gateway boundary > allows only supported business routes and bound trace identifiers [0.79ms]\n(pass) same-origin gateway boundary > rejects arbitrary endpoints, traversal and URL injection [0.55ms]\n(pass) checks the public host instead of the internal Next.js bind address [0.80ms]\n(pass) accepts TLS termination only for the explicitly configured public origin [0.15ms]\n\napps\\web\\src\\features\\auth\\session.test.ts:\n(pass) accepts the complete login and restored-session contract [0.60ms]\n(pass) rejects partial responses before rendering the signed-in workspace [0.34ms]\n\n 6 pass\n 0 fail\n 30 expect() calls\nRan 6 tests across 2 files. [159.00ms]\n"
-      },
-      {
-        "command": "C:\\Users\\mukes\\.bun\\bin\\bun.EXE run typecheck",
-        "exitCode": 0,
-        "output": "$ bun run --cwd apps/web typecheck\n$ tsc --noEmit\n"
-      },
-      {
-        "command": "C:\\Users\\mukes\\.bun\\bin\\bun.EXE run build",
-        "exitCode": 0,
-        "output": "$ bun run --cwd apps/web build\n$ bun --bun next build\n\u25b2 Next.js 16.4.2 (Turbopack)\n\u2713 Running next.config.ts took 89ms\n\n  Creating an optimized production build ...\n\u2713 Compiled successfully in 627ms\n  Running TypeScript ...\n  Finished TypeScript in 823ms ...\n  Collecting page data using 5 workers ...\n  Generating static pages using 5 workers (0/3) ...\n\u2713 Generating static pages using 5 workers (3/3) in 930ms\n  Finalizing page optimization ...\n\nRoute (app)\n\u250c \u25cb /\n\u251c \u25cb /_not-found\n\u2514 \u0192 /api/[...path]\n\n\n\u25cb  (Static)   prerendered as static content\n\u0192  (Dynamic)  server-rendered on demand\n\n"
-      }
-    ]
-  },
-  "runtimeManifest": {
-    "apps/api/Dockerfile": "d26385df79a4e7650271ad59b7a827c0374d200948c80a6eb765d096cf314fa9",
+  "sourceArchiveSha256": "6cfdafc1c4bf35334c63df2786197d00847cbd2334c6101bbc17ff2979c94004",
+  "sourceManifest": {
+    ".dockerignore": "742abc0c93428d5c483d221fb0b7c3ecdd767a3bb03b92ea7e7d531caffdb689",
+    ".env.example": "883ace23bef77556e2e5c9f0c73218d1526942b816a6c67caa750d02ae2e423b",
+    ".github/workflows/verify.yml": "f52d6f94d486f5dee9c6d87f349543837a33f7a2eccbce9b30ccf48c13a9bf23",
+    ".gitignore": "a3722db62c7b9ef6c7b01ff67e76adc3ec17292e1bedfb48ad63f5a7f3902f63",
+    "README.md": "3672f9a4a4dbcde6cf07d1e8770bc117e9de08d2062dd2c75f607c5a1953497f",
+    "apps/api/Dockerfile": "eb6888799c4076634725bcd9bcae85f1ce47019e1fbd014b99d21c4ff12a19c0",
     "apps/api/pyproject.toml": "6d085b7f1db44fbf3dbda83fa411d0cdf1e0fd2210f551ee7ae19f536d19586a",
     "apps/api/requirements.lock": "f15173790de9767318d1bcb5bb7270d7cee95f03f7e7203b9d8f075ae36ddda2",
     "apps/api/requirements.txt": "a87fb9c83eb37e986a3a837b7cb0d94532adbf70a3b0ae2bc4ef462ab9280f87",
     "apps/api/src/relay_api/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
     "apps/api/src/relay_api/__main__.py": "9e5c3c5ca45e6564ffae64f02a0422a11175e936a05dc0442f4b4f3038da7eda",
     "apps/api/src/relay_api/agents/__init__.py": "7c4a6a8a85585b06e701c2496d5c4b6d7ceb7e841c0fd3634b797bbf24e91313",
-    "apps/api/src/relay_api/agents/catalog.py": "f1fbee4bd3ae8b64eee19b1881e87b7a6d3f43516c6d071b59355fc1c736c04f",
-    "apps/api/src/relay_api/agents/runtime.py": "fdd9ce7d6cd91334baff910f6bdd81dbc42f6fd3856cbd9a39785cb5716c5c2f",
+    "apps/api/src/relay_api/agents/catalog.py": "4bac9826ae71c0360d34f4ab1c2032152c74c6074496df087d5bccce4c566c21",
+    "apps/api/src/relay_api/agents/runtime.py": "982f2ce15b80ec9a989de809babc1b915d1f525cfb768578528001547a77f5f7",
     "apps/api/src/relay_api/ai/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-    "apps/api/src/relay_api/ai/providers.py": "982d01f9a8e86694649e7a0c2f222c61563756b295d55f88484d9e15ffe8e96e",
+    "apps/api/src/relay_api/ai/providers.py": "c16d5f9e1f9f8559cf5795020deefe52f053c1bed002e6fbc644a17a2bae70fa",
     "apps/api/src/relay_api/application/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-    "apps/api/src/relay_api/application/case_actions.py": "f34531476628e5129dd1dc56e834dab12f19ef4d7fcbcaeca08d451a6ab1c50d",
-    "apps/api/src/relay_api/application/evidence.py": "6fbf3d08f6cd3b389ad488c88249ac90975f1c8caa54d7ce3a6dfb0529e3b616",
-    "apps/api/src/relay_api/application/workflows.py": "6b44bc8f66b584cb3fad6ec18ea97a549818d56465bb2280432fd80b080e31b1",
+    "apps/api/src/relay_api/application/case_actions.py": "97a29faf9407dd882d8cbb2bbf5c2e25fdf9532df9ad0f47780cbf89e7a5f38a",
+    "apps/api/src/relay_api/application/evidence.py": "bd9aaeff60c2782d00690ead24a66d06bc6f2d89bf4bfb75a7421bc4b078280c",
+    "apps/api/src/relay_api/application/workflows.py": "ab315b8b3e9fba0a74c86184ae23954b3ee0b10fec1478634ec7b7e2e2435f6f",
     "apps/api/src/relay_api/core/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-    "apps/api/src/relay_api/core/config.py": "d722f4a9ec57ba56c7be44d992416ffbdb33466f216f7287b17f40122021827e",
-    "apps/api/src/relay_api/core/origins.py": "54d9648f97f5da2742554581aa743c1efbe967f909be704989e28ea3a182d1a6",
+    "apps/api/src/relay_api/core/config.py": "8ef1b480f3368a6e24077960c8e5236131217ce813bdb22c0b1607f1cd6c99b7",
+    "apps/api/src/relay_api/core/origins.py": "4bbb188048be60e07bb38ea4a422d10aaba0d131e61cdfbda70ec4794512b8b2",
     "apps/api/src/relay_api/domain/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-    "apps/api/src/relay_api/domain/models.py": "88a1213a757c21bc256294d4b121313e3c21b99cbb76525cacb02a9c13857919",
+    "apps/api/src/relay_api/domain/models.py": "87375ffca68ac52e0afd5e54865fc6a6f942286a454653d084c72add221360cc",
     "apps/api/src/relay_api/evaluation/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-    "apps/api/src/relay_api/evaluation/scenarios.py": "33f55283a83e08460db7fa6658fd59bb750dd65080fb9e672d484ee62a0535a2",
-    "apps/api/src/relay_api/http/app.py": "8e462dca509bea3ee9547e21c889b267c731849bca11521ee2de201ef07b4a88",
+    "apps/api/src/relay_api/evaluation/scenarios.py": "f903181ddc7a89a8f769cbef5fa13c0830b16b9cdd917bd4dd7f9983132abb62",
+    "apps/api/src/relay_api/http/app.py": "8c975e6bd5ffe55bcfc2563c4c30cc60ac81cfc537dcb0dbf4c25093f5ae8db9",
     "apps/api/src/relay_api/infrastructure/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-    "apps/api/src/relay_api/infrastructure/enterprise.py": "9399e02fe7d1c076cb4f8a789e72026f75bab6702115af96b3d30056c44f978b",
-    "apps/api/src/relay_api/infrastructure/storage.py": "985598f4e1a02c411f683b936f7601904313921164d93ad6334498d644471f9c",
+    "apps/api/src/relay_api/infrastructure/enterprise.py": "43c1a9a7f47d78592f2c36e0273d1019f0164b8a910b7e2174956ffb146a6047",
+    "apps/api/src/relay_api/infrastructure/storage.py": "30858b9daa3aa83dbccd55b84de39c594ec78c9f006ac3db8ac963a384ed5f3a",
     "apps/web/AGENTS.md": "063098f6cb31bb44c6f8fbea25b3876de7ee1e5f7d00a50dbab506f6415eb7f0",
     "apps/web/Dockerfile": "1381747af3988682dd743a4b202190bbfda04cb9df7c25cfbd5781e4d688a7a2",
     "apps/web/next-env.d.ts": "1862ac4bbbc5192d4bf562161df66ea547ed3e67173100656ab606ae9797db2b",
@@ -113,7 +46,7 @@
     "apps/web/src/app/layout.tsx": "f24b27a4a71054efb124bd45d2951a7bff9ace6c0d35abb2b0e13ead003c4869",
     "apps/web/src/app/page.tsx": "4303f438932334b360b81f57ee43e5f4705cc2e51f1f1892c935aab452508931",
     "apps/web/src/components/ui.tsx": "8e404e03e789e993eb2a8ef6209aa0e3a92cfbd426394ef50dbf7832d227f100",
-    "apps/web/src/components/workspace.tsx": "bebdb30d8593dbbc14eb854874279a5d5aa5223812e21a2f776214e03ee775d4",
+    "apps/web/src/components/workspace.tsx": "5cce722b854990dfd5e6abca9d04c9fbd697ab9a732a5d9bf2f69c40ced74014",
     "apps/web/src/features/agents/agent-workspace.tsx": "79a325a4291d36e4b9b60e889e71731178813a8438c3ee10074561504a640164",
     "apps/web/src/features/auth/session.test.ts": "d3669247243a106f5a1bdf5d1ad64430f539e293f1d6b6f86025ccc8f3df6116",
     "apps/web/src/features/auth/session.ts": "f90c0dc2fe12d82a2f7a89c724a2abdee9ff01861e71b3618ace311c4b069455",
@@ -126,7 +59,7 @@
     "apps/web/src/features/support/use-activity.ts": "e316b796e19d16011fbdb2e47a0deef01a000bcb5aad0b1e3d10e6b36bb9971d",
     "apps/web/src/features/traces/trace-drawer.tsx": "a10edbb6b630291b60658b0dab007b9025a6a5344ef635e31562df61e5fc4324",
     "apps/web/src/lib/api.ts": "de33aa7ff9c6fc27d9d98b5164df5f11d9155ae365951c3fb86473ddcd8c1b1c",
-    "apps/web/src/lib/proxy-policy.test.ts": "7c62bf6e96d1e33d2db79054851662658f5223cb03ebe30ac55a34bb3473338d",
+    "apps/web/src/lib/proxy-policy.test.ts": "34204339302085193ba0b257a3b247babd6cf8d0babe790c9da2525d84bfc601",
     "apps/web/src/lib/proxy-policy.ts": "c2e2bc6037503aa63a0899409a2d9e669943398da18d5f01105d41def67bef0a",
     "apps/web/src/lib/types.ts": "d871dad6885f5fb7af4d92c92823d75148649f4cf1c4f8a7fe9ba6dd346472a6",
     "apps/web/src/styles/agents.css": "6074ca22260b596d080ddc8b94937412b8e7c6d25b3cd6ce4b55a59218a8e2f5",
@@ -138,9 +71,59 @@
     "apps/web/src/styles/support.css": "dec04993825730582376a9a197e640e428351d9be8998d495f8e98bfa6d1e16b",
     "apps/web/src/styles/traces.css": "358f26b87e0c7b167ba42c9ff10debad93e909de205346f3586e2b57e02e2b8b",
     "apps/web/tsconfig.json": "8c313d81b9ca07665c597fd022101e59f256714350e740055ccaefd6238eda23",
-    "bun.lock": "ce3b8d62e42b145f584a40852003836aaf4656aab7485c5b42e92e625121b67b",
-    "compose.yaml": "c62668ec82d092ad9250e9d968b8a4cd78a3b34cec3435b9de7b7bca80155c0b",
-    "package.json": "11de9a85f207932d54c6c02c598076e5650c14cc52d2851ed5c9ffdc7a99c17c",
+    "bun.lock": "55041cf83a87cc188c9c9200f2ece1a1970cc8001b81fbdbb089670dae36f7f2",
+    "compose.yaml": "d3ccb49fd561027a8f90504b74feaa9a3b26c94334413900244f0fe4cbae4d3c",
+    "deployment/README.md": "7ce2b1844accf97baebec88f09674b5e9a9a62102cfa78f88fb7d9ae743ce568",
+    "deployment/cloudbuild.yaml": "0cba7208b796a84361a4ecc4435369218de3ecf77b5ab61e485034ca4608de32",
+    "deployment/compose.gcp.yaml": "82b7daa478cf32e5b7b707c7b2fa20e1ce31f4b1fd01bd3bde33c453df32ab5e",
+    "deployment/nginx.conf.example": "733e8c440bac522617adfff53916a1f9c68ec13675affcf4cde2b2d0fcf1fa80",
+    "docs/ARCHITECTURE.md": "91a946f9a3460574c6a515a4c96fb9bba50dfd03a6859e33cb9a79741e797444",
+    "docs/Architecture.png": "75e67b3be598d368c03407bd1a7502338fb1a77330ab98b6954a2a377c8a6de4",
+    "docs/CHANGES.md": "50c7e795222e701bf3719e2a315873ec4471a1625ecd8b64ab028d995244fd99",
+    "docs/DEPLOYMENT.md": "4b9a3c7775e241042daa6cbd35415d44d8ab0327ff06e01bd928c8c96324292c",
+    "docs/Deployment.png": "08bb5efbbbda58cce8d4614d2f525e6d4c33e6c9b0650454b95fff13f108f35b",
+    "docs/ENTERPRISE_AUTH.md": "c4f314c5946be390eb276a3db82b2629dbc2ba44a9fc77df279c720210300182",
+    "docs/FINAL_COMPLIANCE_AUDIT.md": "63484144abb88c319cd5834b209850eb2a1dc286323c8cde241ab53abed974ed",
+    "docs/GEMINI_CX_MAPPING.md": "cf3f3776ff48bdf63172bf2cc2d51367b9e99c38c4846297e6538d0f165d85e1",
+    "docs/GEMINI_INVOCATIONS.md": "ba1feeea6d2611a47be8bf5bbe675a5703a01be0e5e7076db9f68ef1775ad959",
+    "docs/HANDOVER.md": "390562f9effd71f59b810f224c06261ffac03ff143024c47f33890ebdeeb6954",
+    "docs/PRODUCTION_REVIEW.md": "2907be1ff77fcb982e7c8484f63609f5bf3bb0079a0083a303e43c76434560d0",
+    "docs/REQUIREMENT_EVIDENCE_MATRIX.md": "ded38489ad7faf299416fb2aabe19fdadea1456a2c9d03d8d644eb802b586a3b",
+    "docs/REVIEWER_GUIDE.md": "2e74f3b7d5f9ae00c424219f3f883ae735a659877db4ce8fff1f3934a615a7ce",
+    "docs/SECURITY.md": "e96e928526d14fecb8f7604ac69c870f240ef441d5954a42cdfbbdeffab02dac",
+    "docs/challenge/ORIGINAL_CHALLENGE.md": "0049d67d41b17a04688345c7d1d3345325636371c0841a0f008532e72687a0db",
+    "evidence/current/SCN-001.json": "c2fbe115056c1596f0e2456d952876e13938605146f14341aa5a7e03a768a244",
+    "evidence/current/SCN-002.json": "12f7393ba46ca01e674089e48b8878e0e04663ddac6d85a242a5bd12ec608e52",
+    "evidence/current/SCN-003.json": "422676af0f566c7d516187a1209a37636405f4a6ce1134dd6d083ec93c5f3ff7",
+    "evidence/current/SCN-004.json": "0d93fc058dbb64f3fa6b8a8165a9904fd7aca5ece32768da6ae12297972b8f93",
+    "evidence/current/SCN-005.json": "396dd416a316d4620d648e862cc8067305363e3a0aaca7caeb7c517109f3cfe8",
+    "evidence/current/SCN-006.json": "65696d48b1d993675ba62074f7c8518ca0acef681f3a1deded28b30fde290a57",
+    "evidence/current/SCN-007.json": "c6b127af7d8653ecfd6b65ba4441182d39f59dfa8f5625ab305d4657882939c2",
+    "evidence/current/SCN-008.json": "2ad42a5ddf6a94d35db837c951374ed790d7754a0792fad091f9e66b28620138",
+    "evidence/current/alternate-provider-availability.json": "ff608e0d2df155eca4dcccc77a80df44ad8051ae7f0f8d74ffef054e019950fd",
+    "evidence/current/browser-agents.png": "047dbc050413f50cf0c0240be274e78a4f78ff1cb2be3368badd4242792fcaad",
+    "evidence/current/browser-approval.png": "2bdafeda4a9d4758147aa076470cbc920d1e8295fc5b3581d62449e782efe955",
+    "evidence/current/browser-completed-desktop.png": "463cd6baa3759554445f6c2c03d52842c883f6ff7a610fd7fb7dccd507c71efd",
+    "evidence/current/browser-completed.png": "ac471680e3ee0f534ed81e1ad887e199ba2f23683a13adf2c50c66c446be7198",
+    "evidence/current/browser-mobile.png": "4275495d8d2493114672301adfb1198bc4263d48d97ff67735c9d36e6aaeb5a2",
+    "evidence/current/browser-verification.json": "1c6ba0be0b63a84201e8eb0ced1cc7811423a957bb58306e097b6019fe80fc9b",
+    "evidence/current/clean-http-scenarios.json": "54aa86c198fa16faf034128b303d2c26f77bc473c8389e0f735f43c084865983",
+    "evidence/current/clean-verification.json": "3a4f87d99478e98a2dfc331dc37549b24c51987a631dec7aa365eaf4e15ed865",
+    "evidence/current/client-secret-scan.json": "77b6bbff467f9c1c543b597da0b46a42f5ea227da7d84b297b9799bc74eb3af7",
+    "evidence/current/compliance-audit.json": "941640d708aa23774676361331922c0fc329acb88089ea1ea05fc14c1eb15a4c",
+    "evidence/current/current-model-availability.json": "e458a2eca34715c664c9019024e4615691853e69f5296ee187a357d09fee2313",
+    "evidence/current/deployment-config.json": "543616a4c64a5e36e4e3dbf092fc20a61a3f42e661968ff72ebf9e57703b0945",
+    "evidence/current/docker-verification.json": "6ef21bade4f95031c382a04cc78db6d4a9a01825a7eea58fe40347d541beed2f",
+    "evidence/current/frontend-dependency-audit.json": "640c1a74ae68393f732e29bc8ff6236cd2f3ef26d01e999ddf233db924973fef",
+    "evidence/current/http-scenarios.json": "d098d60e7dff875e325996393e9922c5070ffe8229e5566b923cd6691d666752",
+    "evidence/current/live-gemini-2.5-unavailable.json": "206e25726586ee75b8c9978d1875bcffd88e5eaa9bc541eb4be8ac469f6543ca",
+    "evidence/current/live-gemini-3.5-quota-failure.json": "336bc46d026bb6598934ab690de0a5cb2696824e755f3e7df2a4e8deb5503e6b",
+    "evidence/current/live-gemini-evidence.json": "206e25726586ee75b8c9978d1875bcffd88e5eaa9bc541eb4be8ac469f6543ca",
+    "evidence/current/provider-availability.json": "a5ad9cdd98cb257af05d006931422148dec754f014b4538527a8a22750d19fc1",
+    "evidence/current/pytest.xml": "a9135b716033993b845f95ef309a2c5dfb0ec85815a1b850f6f073dcfb29d22f",
+    "evidence/current/source-provenance.json": "460e09d729b67b007295354f28cbb56993941a1e3ec894992de9d3bd5be2eae8",
+    "evidence/current/verification-summary.json": "a22dcbabb21b9e8f12fe0eb86e7c7103e34786259780a0fd0faab102514e19f6",
+    "package.json": "3dfba7ebae51004607b6ff8dc5ac8f545648235798c8bc6e0b34b97093b9b002",
     "pyproject.toml": "84f577efa7e8a69de1c516d7600a910dda52e8d9ea86688d5a31bb1eb5e97dd5",
     "requirements-dev.txt": "e2e73143f54eb2cf44e5dabd9fe56c581b6cac89495ba58f89852919045977c6",
     "resources/challenge/.env.example": "c0a60a5fe8a27e74514fbd974d25c44802528800c6f1a30e518e6bfe942097c4",
@@ -180,23 +163,77 @@
     "resources/challenge/starter-solution/server.py": "daf2af479ca64809fe6bf6d37e5879c2720766352c44faa692339676c1a3d5cb",
     "services/mock-telecom/src/relay_mock/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
     "services/mock-telecom/src/relay_mock/__main__.py": "582754f06debe7d3e6f04cc74ee7d49cc28cca60a2b9f2dc31fd537ddd91ac1b",
-    "services/mock-telecom/src/relay_mock/server.py": "24ebc4fd599ed79b400e5ec6ac571111e48fd8b544f076f6bc923d862bb32684",
+    "services/mock-telecom/src/relay_mock/server.py": "99f8da43ecd153860be489849edb523b3f890060aeb29ed9e10c5daa6eaeaa1b",
     "tests/acceptance/test_scenarios.py": "dd75324e88ec7c9c7d419bbc578c1919372e136da74ea00638a3babf599fe142",
     "tests/conftest.py": "c77a0cb1b87efe339d97decb142a5c0964b592ac25c85375b5b1f5828f2ddac8",
     "tests/contract/test_resources.py": "205d388242a1b6c23131ff08f2487968dd7d31348a5de3678cec5ef8314f30b7",
-    "tests/integration/test_adk_agents.py": "ea2228edb689361094b9f31a777742e8684a2858204003cf139e20f26da21532",
+    "tests/integration/test_adk_agents.py": "6eab81c1b9c71b7edb5eca7f049dac121e0f5069c7cf97e1e919ebd1fbdfd937",
     "tests/integration/test_ai_observability.py": "445a7f0262ac7ab2f60b56e1e0ff90f5b96602a3a63755dde8fed5fdbdd0f7eb",
-    "tests/integration/test_compliance_regressions.py": "7bbfb90368eb6d8c1d33595a7e4c77339bc45b7663400993d7bebfa53222640f",
+    "tests/integration/test_compliance_regressions.py": "9f30311191cc882941a8c2ed3ef01a5bca62f9264bdbb37efef4224fa104cc19",
     "tests/integration/test_integrations.py": "27da98c0ca660b19c962ee4e948a20093c3fffdf537fe1331585493dfc786880",
-    "tests/integration/test_local_origins.py": "096cdcd333cd8ede610f584467329857b594e2bd819c54a084fce73ffeb87c78",
+    "tests/integration/test_local_origins.py": "6c8d4d3a0d0667f118a53de069e80e0c804578f6345934787099fb62bf272f25",
+    "tests/integration/test_release_hardening.py": "01a7afbf0168fc1f917711edaf22e161916d2d1b4ba9ee1187164e7add37e34d",
     "tests/integration/test_security.py": "18885499e811a5aa4c55a28d3a5e6dab71761de1941b5c32669cfbf442f922f5",
-    "tools/build_ui_guide.py": "0eb727b43ecedf0e83238c4585c216530d76f24d7e2cb3f4c5bbd8f1aadb8523",
-    "tools/compliance_audit.py": "387c7dbbd97be78e9f6614c8919d1a4ff96b5b3f8cf24caf1113f474796ccab1",
-    "tools/dev.py": "e14dbb5672a63c88413af6fc91d345d4bc34642fffb56d4eb52d868f6683eada",
-    "tools/evaluate.py": "45022dd9dba2f9ac0a9a40f558da4231611eff8065f0f269ee91f59a42c21827",
-    "tools/package_release.py": "eedcdfc670b3c295ac46f363b8e91a3b7261b4d8ad828794f861b553282417f1",
-    "tools/processes.py": "5fc4167a065309779b7370e43062817d1ebfd6f3f67228ef977f03f0655ebe8a",
-    "tools/verify_clean_release.py": "5da57c86a7b734257d84b35cd221b51c8c16ce8e4de6edd70c8ed51e0c8412b3",
-    "tools/verify_containers.py": "064fc52a7239e290d1b81a00073d4d6a8c335ecfd111304539a2e9e733f9a36e"
-  }
+    "tools/backup_database.py": "43fbd569daa6896e8f49abeb1d09965aedfa0ee60dc7f95987e8653019cdf0f2",
+    "tools/compliance_audit.py": "069fbaa945661961c9ade59ad7dc4e56dce7e308ce1aa7f142b03401c84e0970",
+    "tools/dev.py": "7ccb1ebddb88d17cc7c8f85453d3fe2d79acaa7a69d996645481c88647c89942",
+    "tools/evaluate.py": "48f2944dba82d3164b69eefcc71a556b0eefb567994a62560b4b8f076736c23b",
+    "tools/package_release.py": "c400d2e0e37809a4e1bbe261b4c591eaec2c5eab202e4bb298896f672cc33136",
+    "tools/processes.py": "7167bd1352b6b17bd19c0d424fc913f8b6d92cf302cb50d9586540741f0c71ab",
+    "tools/release_report.py": "2016a33c4600a487cfb6072669a8d18e230c5383ab60b4988d7f7356b111cd38",
+    "tools/verify_clean_release.py": "b09d0bdb109f7d9ee743d0ea834e5ed6dd3f596ec37403b83904c5fc1209d48e",
+    "tools/verify_containers.py": "e24385be68b1e53d5cda4b368c5f94d1594b998b1fc690964f0f6eced28686d2"
+  },
+  "commands": [
+    {
+      "command": "C:\\Users\\mukes\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python.exe -m venv C:\\Users\\mukes\\OneDrive\\Documents\\ChatGPT\\Customer Experience Resolution System\\.local\\updated-review\\.local\\clean-1792341397\\relay-cx\\.venv",
+      "exitCode": 0,
+      "output": ""
+    },
+    {
+      "command": "C:\\Users\\mukes\\OneDrive\\Documents\\ChatGPT\\Customer Experience Resolution System\\.local\\updated-review\\.local\\clean-1792341397\\relay-cx\\.venv\\Scripts\\python.exe -m pip install -r requirements-dev.txt",
+      "exitCode": 0,
+      "output": "ocal\\updated-review\\.local\\clean-1792341397\\relay-cx\\apps\\api\\requirements.lock (line 42))\n  Using cached starlette-1.8.0-py3-none-any.whl.metadata (6.6 kB)\nCollecting tenacity==9.1.4 (from -r C:\\Users\\mukes\\OneDrive\\Documents\\ChatGPT\\Customer Experience Resolution System\\.local\\updated-review\\.local\\clean-1792341397\\relay-cx\\apps\\api\\requirements.lock (line 43))\n  Using cached tenacity-9.1.4-py3-none-any.whl.metadata (1.2 kB)\nCollecting typing-extensions==4.16.0 (from -r C:\\Users\\mukes\\OneDrive\\Documents\\ChatGPT\\Customer Experience Resolution System\\.local\\updated-review\\.local\\clean-1792341397\\relay-cx\\apps\\api\\requirements.lock (line 44))\n  Using cached typing_extensions-4.16.0-py3-none-any.whl.metadata (3.3 kB)\nCollecting typing-inspection==0.4.4 (from -r C:\\Users\\mukes\\OneDrive\\Documents\\ChatGPT\\Customer Experience Resolution System\\.local\\updated-review\\.local\\clean-1792341397\\relay-cx\\apps\\api\\requirements.lock (line 45))\n  Using cached typing_inspection-0.4.4-py3-none-any.whl.metadata (2.6 kB)\nCollecting urllib3==2.8.0 (from -r C:\\Users\\mukes\\OneDrive\\Documents\\ChatGPT\\Customer Experience Resolution System\\.local\\updated-review\\.local\\clean-1792341397\\relay-cx\\apps\\api\\requirements.lock (line 46))\n  Using cached urllib3-2.8.0-py3-none-any.whl.metadata (7.4 kB)\nCollecting uvicorn==0.54.0 (from -r C:\\Users\\mukes\\OneDrive\\Documents\\ChatGPT\\Customer Experience Resolution System\\.local\\updated-review\\.local\\clean-1792341397\\relay-cx\\apps\\api\\requirements.lock (line 47))\n  Using cached uvicorn-0.54.0-py3-none-any.whl.metadata (6.6 kB)\nCollecting watchdog==6.0.0 (from -r C:\\Users\\mukes\\OneDrive\\Documents\\ChatGPT\\Customer Experience Resolution System\\.local\\updated-review\\.local\\clean-1792341397\\relay-cx\\apps\\api\\requirements.lock (line 48))\n  Using cached watchdog-6.0.0-py3-none-win_amd64.whl.metadata (44 kB)\nCollecting websockets==15.0.1 (from -r C:\\Users\\mukes\\OneDrive\\Documents\\ChatGPT\\Customer Experience Resolution System\\.local\\updated-review\\.local\\clean-1792341397\\relay-cx\\apps\\api\\requirements.lock (line 49))\n  Using cached websockets-15.0.1-cp312-cp312-win_amd64.whl.metadata (7.0 kB)\nCollecting pytest==9.1.1 (from -r requirements-dev.txt (line 2))\n  Using cached pytest-9.1.1-py3-none-any.whl.metadata (7.6 kB)\nCollecting ruff==0.17.1 (from -r requirements-dev.txt (line 3))\n  Using cached ruff-0.17.1-py3-none-win_amd64.whl.metadata (21 kB)\nCollecting colorama>=0.4 (from pytest==9.1.1->-r requirements-dev.txt (line 2))\n  Using cached colorama-0.4.6-py2.py3-none-any.whl.metadata (17 kB)\nCollecting iniconfig>=1.0.1 (from pytest==9.1.1->-r requirements-dev.txt (line 2))\n  Using cached iniconfig-2.3.1-py3-none-any.whl.metadata (2.8 kB)\nCollecting pluggy<2,>=1.5 (from pytest==9.1.1->-r requirements-dev.txt (line 2))\n  Using cached pluggy-1.7.0-py3-none-any.whl.metadata (5.0 kB)\nCollecting pygments>=2.7.2 (from pytest==9.1.1->-r requirements-dev.txt (line 2))\n  Using cached pygments-2.21.0-py3-none-any.whl.metadata (2.5 kB)\nUsing cached aiosqlite-0.22.1-py3-none-any.whl (17 kB)\nUsing cached annotated_doc-0.0.5-py3-none-any.whl (5.3 kB)\nUsing cached annotated_types-0.8.0-py3-none-any.whl (13 kB)\nUsing cached anyio-4.15.1-py3-none-any.whl (132 kB)\nUsing cached attrs-26.1.0-py3-none-any.whl (67 kB)\nUsing cached authlib-1.9.1-py2.py3-none-any.whl (266 kB)\nUsing cached certifi-2026.7.22-py3-none-any.whl (136 kB)\nUsing cached cffi-2.1.1-cp312-cp312-win_amd64.whl (185 kB)\nUsing cached charset_normalizer-3.5.2-cp312-cp312-win_amd64.whl (207 kB)\nUsing cached click-8.5.0-py3-none-any.whl (125 kB)\nUsing cached cryptography-50.0.2-cp311-abi3-win_amd64.whl (3.8 MB)\nUsing cached distro-1.9.0-py3-none-any.whl (20 kB)\nUsing cached fastapi-0.141.1-py3-none-any.whl (131 kB)\nUsing cached google_adk-2.12.0-py3-none-any.whl (5.0 MB)\nUsing cached google_auth-2.62.0-py3-none-any.whl (267 kB)\nUsing cached google_genai-2.31.0-py3-none-any.whl (1.2 MB)\nUsing cached graphviz-0.21-py3-none-any.whl (47 kB)\nUsing cached h11-0.16.0-py3-none-any.whl (37 kB)\nUsing cached httpcore-1.0.9-py3-none-any.whl (78 kB)\nUsing cached httpx-0.28.1-py3-none-any.whl (73 kB)\nUsing cached idna-3.20-py3-none-any.whl (69 kB)\nUsing cached joserfc-1.7.5-py3-none-any.whl (71 kB)\nUsing cached jsonschema-4.26.0-py3-none-any.whl (90 kB)\nUsing cached jsonschema_specifications-2025.9.1-py3-none-any.whl (18 kB)\nUsing cached opentelemetry_api-1.42.1-py3-none-any.whl (61 kB)\nUsing cached opentelemetry_sdk-1.42.1-py3-none-any.whl (170 kB)\nUsing cached opentelemetry_semantic_conventions-0.63b1-py3-none-any.whl (203 kB)\nUsing cached packaging-26.3-py3-none-any.whl (129 kB)\nUsing cached pyasn1-0.6.4-py3-none-any.whl (84 kB)\nUsing cached pyasn1_modules-0.4.2-py3-none-any.whl (181 kB)\nUsing cached pycparser-3.11-py3-none-any.whl (51 kB)\nUsing cached pydantic-2.14.1-py3-none-any.whl (488 kB)\nUsing cached pydantic_core-2.50.1-cp312-cp312-win_amd64.whl (2.2 MB)\nUsing cached python_dotenv-1.2.4-py3-none-any.whl (23 kB)\nUsing cached python_multipart-0.0.32-py3-none-any.whl (30 kB)\nUsing cached pyyaml-6.0.3-cp312-cp312-win_amd64.whl (154 kB)\nUsing cached referencing-0.37.0-py3-none-any.whl (26 kB)\nUsing cached requests-2.34.2-py3-none-any.whl (73 kB)\nUsing cached rpds_py-2026.9.1-cp312-cp312-win_amd64.whl (222 kB)\nUsing cached sniffio-1.3.1-py3-none-any.whl (10 kB)\nUsing cached starlette-1.8.0-py3-none-any.whl (79 kB)\nUsing cached tenacity-9.1.4-py3-none-any.whl (28 kB)\nUsing cached typing_extensions-4.16.0-py3-none-any.whl (45 kB)\nUsing cached typing_inspection-0.4.4-py3-none-any.whl (14 kB)\nUsing cached urllib3-2.8.0-py3-none-any.whl (135 kB)\nUsing cached uvicorn-0.54.0-py3-none-any.whl (87 kB)\nUsing cached watchdog-6.0.0-py3-none-win_amd64.whl (79 kB)\nUsing cached websockets-15.0.1-cp312-cp312-win_amd64.whl (176 kB)\nUsing cached pytest-9.1.1-py3-none-any.whl (386 kB)\nUsing cached ruff-0.17.1-py3-none-win_amd64.whl (10.1 MB)\nUsing cached colorama-0.4.6-py2.py3-none-any.whl (25 kB)\nUsing cached iniconfig-2.3.1-py3-none-any.whl (7.6 kB)\nUsing cached pluggy-1.7.0-py3-none-any.whl (27 kB)\nUsing cached pygments-2.21.0-py3-none-any.whl (1.3 MB)\nInstalling collected packages: websockets, watchdog, urllib3, typing-extensions, tenacity, sniffio, ruff, rpds-py, pyyaml, python-multipart, python-dotenv, pygments, pycparser, pyasn1, pluggy, packaging, iniconfig, idna, h11, graphviz, distro, colorama, click, charset-normalizer, certifi, attrs, annotated-types, annotated-doc, aiosqlite, uvicorn, typing-inspection, requests, referencing, pytest, pydantic-core, pyasn1-modules, opentelemetry-api, httpcore, cffi, anyio, starlette, pydantic, opentelemetry-semantic-conventions, jsonschema-specifications, httpx, cryptography, opentelemetry-sdk, jsonschema, joserfc, google-auth, fastapi, authlib, google-genai, google-adk\nSuccessfully installed aiosqlite-0.22.1 annotated-doc-0.0.5 annotated-types-0.8.0 anyio-4.15.1 attrs-26.1.0 authlib-1.9.1 certifi-2026.7.22 cffi-2.1.1 charset-normalizer-3.5.2 click-8.5.0 colorama-0.4.6 cryptography-50.0.2 distro-1.9.0 fastapi-0.141.1 google-adk-2.12.0 google-auth-2.62.0 google-genai-2.31.0 graphviz-0.21 h11-0.16.0 httpcore-1.0.9 httpx-0.28.1 idna-3.20 iniconfig-2.3.1 joserfc-1.7.5 jsonschema-4.26.0 jsonschema-specifications-2025.9.1 opentelemetry-api-1.42.1 opentelemetry-sdk-1.42.1 opentelemetry-semantic-conventions-0.63b1 packaging-26.3 pluggy-1.7.0 pyasn1-0.6.4 pyasn1-modules-0.4.2 pycparser-3.11 pydantic-2.14.1 pydantic-core-2.50.1 pygments-2.21.0 pytest-9.1.1 python-dotenv-1.2.4 python-multipart-0.0.32 pyyaml-6.0.3 referencing-0.37.0 requests-2.34.2 rpds-py-2026.9.1 ruff-0.17.1 sniffio-1.3.1 starlette-1.8.0 tenacity-9.1.4 typing-extensions-4.16.0 typing-inspection-0.4.4 urllib3-2.8.0 uvicorn-0.54.0 watchdog-6.0.0 websockets-15.0.1\n\n[notice] A new release of pip is available: 25.0.1 -> 26.2.1\n[notice] To update, run: C:\\Users\\mukes\\OneDrive\\Documents\\ChatGPT\\Customer Experience Resolution System\\.local\\updated-review\\.local\\clean-1792341397\\relay-cx\\.venv\\Scripts\\python.exe -m pip install --upgrade pip\n"
+    },
+    {
+      "command": "C:\\Users\\mukes\\.bun\\bin\\bun.EXE install --frozen-lockfile",
+      "exitCode": 0,
+      "output": "bun install v1.3.14 (0d9b296a)\n\n70 packages installed [20.71s]\n"
+    },
+    {
+      "command": "C:\\Users\\mukes\\OneDrive\\Documents\\ChatGPT\\Customer Experience Resolution System\\.local\\updated-review\\.local\\clean-1792341397\\relay-cx\\.venv\\Scripts\\python.exe -m ruff check apps/api services tests tools",
+      "exitCode": 0,
+      "output": "All checks passed!\n"
+    },
+    {
+      "command": "C:\\Users\\mukes\\OneDrive\\Documents\\ChatGPT\\Customer Experience Resolution System\\.local\\updated-review\\.local\\clean-1792341397\\relay-cx\\.venv\\Scripts\\python.exe -m ruff format --check apps/api services tests tools",
+      "exitCode": 0,
+      "output": "44 files already formatted\n"
+    },
+    {
+      "command": "C:\\Users\\mukes\\OneDrive\\Documents\\ChatGPT\\Customer Experience Resolution System\\.local\\updated-review\\.local\\clean-1792341397\\relay-cx\\.venv\\Scripts\\python.exe -m pytest -q --junitxml=evidence/current/pytest.xml",
+      "exitCode": 0,
+      "output": "........................................................................ [ 68%]\n.................................                                        [100%]\n============================== warnings summary ===============================\ntests/integration/test_adk_agents.py::test_adk_runner_calls_authorized_account_tool\n  C:\\Users\\mukes\\OneDrive\\Documents\\ChatGPT\\Customer Experience Resolution System\\.local\\updated-review\\.local\\clean-1792341397\\relay-cx\\.venv\\Lib\\site-packages\\google\\adk\\models\\llm_request.py:306: UserWarning: [EXPERIMENTAL] feature FeatureName.JSON_SCHEMA_FOR_FUNC_DECL is enabled.\n    declaration = tool._get_declaration()\n\n-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html\n105 passed, 1 warning in 50.00s\n"
+    },
+    {
+      "command": "C:\\Users\\mukes\\OneDrive\\Documents\\ChatGPT\\Customer Experience Resolution System\\.local\\updated-review\\.local\\clean-1792341397\\relay-cx\\.venv\\Scripts\\python.exe tools/evaluate.py --mode REVIEWER",
+      "exitCode": 0,
+      "output": "SCN-001 PASS 17 checks\nSCN-002 PASS 21 checks\nSCN-003 PASS 17 checks\nSCN-004 PASS 30 checks\nSCN-005 PASS 14 checks\nSCN-006 PASS 17 checks\nSCN-007 PASS 25 checks\nSCN-008 PASS 19 checks\nREVIEWER PASS\n"
+    },
+    {
+      "command": "C:\\Users\\mukes\\.bun\\bin\\bun.EXE run test:web",
+      "exitCode": 0,
+      "output": "$ bun test apps/web/src\nbun test v1.3.14 (0d9b296a)\n\napps\\web\\src\\lib\\proxy-policy.test.ts:\n(pass) same-origin gateway boundary > allows only supported business routes and bound trace identifiers [0.51ms]\n(pass) same-origin gateway boundary > rejects arbitrary endpoints, traversal and URL injection [0.33ms]\n(pass) checks the public host instead of the internal Next.js bind address [0.32ms]\n(pass) accepts TLS termination only for the explicitly configured public origin [0.06ms]\n\napps\\web\\src\\features\\auth\\session.test.ts:\n(pass) accepts the complete login and restored-session contract [0.40ms]\n(pass) rejects partial responses before rendering the signed-in workspace [0.32ms]\n\n 6 pass\n 0 fail\n 30 expect() calls\nRan 6 tests across 2 files. [75.00ms]\n"
+    },
+    {
+      "command": "C:\\Users\\mukes\\.bun\\bin\\bun.EXE run typecheck",
+      "exitCode": 0,
+      "output": "$ bun run --cwd apps/web typecheck\n$ tsc --noEmit\n"
+    },
+    {
+      "command": "C:\\Users\\mukes\\.bun\\bin\\bun.EXE run build",
+      "exitCode": 0,
+      "output": "$ bun run --cwd apps/web build\n$ bun --bun next build\n\u25b2 Next.js 16.4.2 (Turbopack)\n\u2713 Running next.config.ts took 121ms\n\n  Creating an optimized production build ...\n\u2713 Compiled successfully in 3.4s\n  Running TypeScript ...\n  Finished TypeScript in 1072ms ...\n  Collecting page data using 5 workers ...\n  Generating static pages using 5 workers (0/3) ...\n\u2713 Generating static pages using 5 workers (3/3) in 952ms\n  Finalizing page optimization ...\n\nRoute (app)\n\u250c \u25cb /\n\u251c \u25cb /_not-found\n\u2514 \u0192 /api/[...path]\n\n\n\u25cb  (Static)   prerendered as static content\n\u0192  (Dynamic)  server-rendered on demand\n\n"
+    }
+  ]
 }

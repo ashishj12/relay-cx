@@ -8,15 +8,19 @@ import uuid
 from contextlib import closing
 from datetime import datetime, timezone
 from pathlib import Path
-from jsonschema import Draft202012Validator
+from jsonschema import Draft202012Validator, FormatChecker
 from relay_api.ai.providers import redact
 from relay_api.core.config import CHALLENGE_ROOT
+
 
 def uid(prefix):
     return prefix + "-" + uuid.uuid4().hex
 
+
 def digest(token):
     return hashlib.sha256(token.encode()).hexdigest()
+
+
 class Store:
     def __init__(self, path):
         self.path = str(path)
@@ -29,9 +33,11 @@ class Store:
         CREATE TABLE IF NOT EXISTS events (seq INTEGER PRIMARY KEY, body TEXT);
         CREATE TABLE IF NOT EXISTS escalations (id TEXT PRIMARY KEY, session TEXT, body TEXT);
         CREATE TABLE IF NOT EXISTS telemetry_rejections (timestamp TEXT, reason TEXT);
+        CREATE INDEX IF NOT EXISTS events_trace ON events(json_extract(body, '$.traceId'));
+        CREATE INDEX IF NOT EXISTS events_session ON events(json_extract(body, '$.sessionId'));
         """)
         schema = CHALLENGE_ROOT / "schemas/telemetry-event.schema.json"
-        self.validator = Draft202012Validator(json.loads(schema.read_text()))
+        self.validator = Draft202012Validator(json.loads(schema.read_text()), format_checker=FormatChecker())
         self.log_path = Path(os.getenv("STRUCTURED_LOG_PATH", str(Path(path).parent / "events.jsonl")))
         self.log_path.parent.mkdir(parents=True, exist_ok=True)
 
@@ -104,6 +110,15 @@ class Store:
     def events(self):
         with closing(sqlite3.connect(self.path)) as reader:
             return [json.loads(row[0]) for row in reader.execute("SELECT body FROM events ORDER BY seq")]
+
+    def trace_events(self, trace_id, session_id=None):
+        query = "SELECT body FROM events WHERE json_extract(body, '$.traceId')=?"
+        params = [trace_id]
+        if session_id is not None:
+            query += " AND json_extract(body, '$.sessionId')=?"
+            params.append(session_id)
+        with closing(sqlite3.connect(self.path)) as reader:
+            return [json.loads(row[0]) for row in reader.execute(query + " ORDER BY seq", params)]
 
     def recent_events(self, session_id, limit=60):
         """Independent WAL reads let a browser observe an in-flight request."""

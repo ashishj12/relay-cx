@@ -9,6 +9,7 @@ from relay_api.application.evidence import EvidenceBundle
 from relay_api.domain.models import Interpretation
 import asyncio
 
+
 def provider(text):
     instance = AdkProvider(model="test-model")
 
@@ -19,6 +20,7 @@ def provider(text):
 
     instance.run = Mock(side_effect=run)
     return instance
+
 
 def test_real_sdk_request_and_validation():
     agent = provider('{"intent":"billing","service":"unknown","confidence":0.9}')

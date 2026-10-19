@@ -1,0 +1,11 @@
+{
+  "status": "AVAILABLE",
+  "model": "gemini-3.8-flash",
+  "liveWorkflowStatus": "PASS",
+  "successfulStages": 6,
+  "nativeAdkTools": [
+    "diagnose_service",
+    "read_account"
+  ],
+  "scope": "Five authenticated live HTTP workflow turns, six real model stages, no fallback"
+}

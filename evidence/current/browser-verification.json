@@ -1,33 +1,30 @@
 {
   "status": "PASS",
-  "checkedAt": "2026-10-18T08:29:31.394491+00:00",
-  "baseURL": "http://localhost:3000",
-  "method": "Browser interaction and rendered screenshot inspection",
-  "checks": [
-    "Customer login and logout",
-    "Account answer grounded in enterprise data",
-    "Approval restored after refresh",
-    "Confirmed case receipt",
-    "Customer/staff navigation separation",
-    "Agent Studio configured scope vs recorded invocation distinction",
-    "Actual LIVE_AI router and read_account call visible in Docker UI",
-    "Operations Case Management filtering",
-    "Execution side sheet",
-    "Eight scenario results PASS from UI",
-    "390px mobile evaluation and customer layouts without horizontal page overflow"
-  ],
-  "screenshots": {
-    "01-sign-in.png": "596e50b4b8fe5ac89beb52bbd2b4453a054dcdf2545ddd7749cb99447ddff7d2",
-    "02-conversation.png": "f41ab795af348224f8df4cfa0976b61122caeea1170647b402f23a6c9b45a302",
-    "03-approval.png": "c42d7441b585bbfdbc32b7c3f8ea9b99fcfc2ecc81178bad04fc55da8a02787f",
-    "04-agent-studio.png": "60d37cf2f0429f57eea78ca21d1be8818b2738a0758f97ac72b65bf94b7b2035",
-    "05-operations.png": "26529a1437bb318310ad236b8216fada2ae57eca0c06102e55d22629addcca96",
-    "06-execution-trace.png": "6db257b2edb8cacc9291e21992ce64c13804215ff67c1ded078f1e5ea791fae0",
-    "07-evaluation.png": "217c13b73305baaf5632c99df85655920e80c1fc30c8a146c1a763e5649451dc",
-    "08-mobile.png": "d53a81425c08a3a214a9c676d267ef7668c37260ec331260e118b44697aaf1af",
-    "09-mobile-support.png": "ef749f7409987a8c9f91087e6a86a9f2de643ce58b39a9ceaf1f115001ca8a5f",
-    "10-live-adk.png": "e9068310e12ead261fbca882c90fc3339fdb8ef992cd5c365c0ebf700d1785e4",
-    "11-live-agents.png": "8d75df5d665759617fb177dc8d1936adface8529d7ab4443e441481e1d83f370"
+  "mode": "REVIEWER",
+  "url": "http://localhost:3000",
+  "verifiedAt": "2026-10-18T16:22:50.923Z",
+  "checks": {
+    "customerLogin": true,
+    "specificClarification": true,
+    "resumedDiagnosticsAndXml": true,
+    "historyAndApprovalSurviveNavigation": true,
+    "approvalRestoredAfterRefresh": true,
+    "explicitConfirmationReturnsCaseReference": true,
+    "draftSurvivesNavigation": true,
+    "recordedAgentCatalogVisible": true,
+    "mobile390NoHorizontalOverflow": true,
+    "desktop1366NoHorizontalOverflow": true,
+    "noCapturedConsoleWarningsOrErrors": true
   },
-  "liveEvidence": "evidence/current/live-gemini-evidence.json"
+  "caseReference": "CASE-3686E914",
+  "screenshots": [
+    "browser-approval.png",
+    "browser-agents.png",
+    "browser-mobile.png",
+    "browser-completed-desktop.png"
+  ],
+  "limits": [
+    "Local synthetic enterprise services",
+    "Reviewer mode only; live provider evidence reported separately"
+  ]
 }

@@ -3,10 +3,14 @@ from typing import Any
 
 from relay_api.domain.models import Interpretation
 from relay_api.infrastructure.enterprise import Gateway, IntegrationError
+
+
 @dataclass(frozen=True)
 class EvidenceBundle:
     facts: list[str]
     conflict: str | None = None
+
+
 class EnterpriseEvidence:
     def __init__(self, gateway: Gateway) -> None:
         self.gateway = gateway
@@ -34,11 +38,12 @@ class EnterpriseEvidence:
         if service is None:
             raise IntegrationError("account-service", "service_not_owned")
         facts: list[str] = []
+        session["facts"] = facts
         outage = None
         if decision.intent == "network":
             outage = self.gateway.network(session, trace_id, profile)
-            diagnostic = self.gateway.diagnostics(session, trace_id, service.serviceId)
             facts.append(f"Network service reports {outage.status}; incident {outage.incidentId or 'none'}.")
+            diagnostic = self.gateway.diagnostics(session, trace_id, service.serviceId)
             if outage.estimatedRestoration:
                 facts.append(f"Source restoration estimate (may be stale): {outage.estimatedRestoration}.")
             facts.append(f"Diagnostics: {diagnostic.result}.")
@@ -48,8 +53,8 @@ class EnterpriseEvidence:
             f"observed {legacy['observedAt']}."
         )
         conflict = None
-        if outage and (
-            outage.status == "unknown" or (outage.status == "normal") != (legacy["networkStatus"] == "normal")
-        ):
+        if outage and (outage.status == "unknown" or outage.status != legacy["networkStatus"]):
             conflict = "conflicting_or_unknown_network_status"
+        if service.status != legacy["subscriberStatus"]:
+            conflict = "conflicting_subscriber_status"
         return EvidenceBundle(facts, conflict)

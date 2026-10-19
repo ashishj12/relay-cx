@@ -23,6 +23,7 @@ SAFETY = (
     "Never invent record values, identifiers or tool results."
 )
 
+
 class AdkProvider:
     """A request router and a route-specific tool-using specialist."""
 
@@ -83,7 +84,7 @@ class AdkProvider:
             await runner.close()
 
     def run(self, agent: LlmAgent, payload: dict[str, Any]) -> str:
-        timeout = float(os.getenv("AI_TIMEOUT", "40")) * 3 + 5
+        timeout = min(40.0, max(0.1, float(os.getenv("AI_TIMEOUT", "40"))))
         return asyncio.run(asyncio.wait_for(self._run(agent, payload), timeout=timeout))
 
     def interpret(self, messages: list[str]) -> Interpretation:

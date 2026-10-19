@@ -1,10 +1,14 @@
+import os
 import json
 from pathlib import Path
 import subprocess
 import httpx
 
 ROOT = Path(__file__).resolve().parents[1]
+
+
 def verify():
+    project = os.getenv("COMPOSE_PROJECT_NAME", "relay-release")
     results = []
     loopback = []
     for host in ("localhost", "127.0.0.1"):
@@ -64,10 +68,10 @@ def verify():
     users = {}
     for service in ("api", "web", "enterprise"):
         images[service] = subprocess.check_output(
-            ["docker", "image", "inspect", "relay-release-" + service, "--format", "{{.Id}}"], text=True
+            ["docker", "image", "inspect", project + "-" + service, "--format", "{{.Id}}"], text=True
         ).strip()
         users[service] = subprocess.check_output(
-            ["docker", "compose", "-p", "relay-release", "exec", "-T", service, "id", "-u"], text=True
+            ["docker", "compose", "-p", project, "exec", "-T", service, "id", "-u"], text=True
         ).strip()
         assert users[service] != "0"
     evidence = {

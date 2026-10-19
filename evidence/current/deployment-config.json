@@ -1,0 +1,19 @@
+{
+  "status": "PASS",
+  "scope": "Configuration rendering with placeholder immutable image digests; no registry push or deployment",
+  "cloudDeployed": false,
+  "checks": {
+    "liveMode": true,
+    "secureCookie": true,
+    "failureInjectionDisabled": true,
+    "dataOnBindMount": true,
+    "webLoopbackOnly": true,
+    "privateApiAndEnterprise": true,
+    "imageDigestsRequired": true
+  },
+  "fileHashes": {
+    "compose.yaml": "d3ccb49fd561027a8f90504b74feaa9a3b26c94334413900244f0fe4cbae4d3c",
+    "deployment/compose.gcp.yaml": "82b7daa478cf32e5b7b707c7b2fa20e1ce31f4b1fd01bd3bde33c453df32ab5e",
+    "deployment/nginx.conf.example": "733e8c440bac522617adfff53916a1f9c68ec13675affcf4cde2b2d0fcf1fa80"
+  }
+}

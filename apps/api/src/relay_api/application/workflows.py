@@ -24,6 +24,8 @@ TRANSITIONS = {
     "EXECUTING_ACTION": {"VERIFYING_ACTION", "ESCALATED"},
     "VERIFYING_ACTION": {"RESOLVED", "ESCALATED"},
 }
+
+
 class ResolutionService:
     def overview(self, session):
         """An independent authorized read; never changes an in-flight chat/action."""
@@ -82,6 +84,10 @@ class ResolutionService:
         self.store.emit("authentication.attempted", trace_id, "anonymous", status="pending")
         try:
             auth = self.gateway.login(data, trace_id, anonymous)
+            if (
+                "customer" in auth.roles and (not auth.accountId or not auth.customerId.startswith("CUST-"))
+            ) or not auth.roles:
+                raise IntegrationError("authentication", "invalid_identity")
             if auth.expiresIn <= 0:
                 raise IntegrationError("authentication", "expired_identity")
         except IntegrationError:
@@ -94,6 +100,7 @@ class ResolutionService:
             customerId=auth.customerId,
             accountId=auth.accountId,
             roles=auth.roles,
+            enterpriseToken=auth.accessToken,
             messages=[],
             history=[],
             completedSteps=[],
@@ -258,12 +265,15 @@ class ResolutionService:
             escalationId=uid("ESC"),
             traceId=trace_id,
             customerId=session["customerId"],
-            requestSummary="; ".join(session["messages"][-2:]),
+            requestSummary="; ".join(
+                turn["text"] for turn in session.get("history", []) if turn["role"] == "user"
+            )[-4000:],
             completedSteps=steps,
             reason=reason,
             recommendedNextStep="Human support should inspect verified facts and integration status; reconcile uncertain actions before retrying.",
             pendingAction=session.get("pending"),
             facts=session.get("facts", []),
+            priorVerifiedEvidence=session.get("verifiedEvidence", [])[-8:],
             verifiedContext={
                 "accountId": session.get("accountId"),
                 "identitySource": "synthetic-authentication-service",
@@ -300,6 +310,11 @@ class ResolutionService:
             {"role": "assistant", "text": result["answer"], "traceId": trace_id}
         )
         session["history"] = session["history"][-40:]
+        if session.get("facts"):
+            session.setdefault("verifiedEvidence", []).append(
+                {"traceId": trace_id, "verifiedAt": time.time(), "facts": list(session["facts"])}
+            )
+            session["verifiedEvidence"] = session["verifiedEvidence"][-8:]
         self.store.save(session)
         if failed:
             self.store.emit(
@@ -345,8 +360,7 @@ class ResolutionService:
             session["state"] = "NEW"
             session["facts"] = []
             session["_ai_failed"] = False
-            if previous != "NEEDS_CLARIFICATION":
-                session["completedSteps"] = []
+            session.setdefault("completedSteps", [])
             message = redact(data.message)
             session.setdefault("history", []).append({"role": "user", "text": message})
             session["messages"] = (session["messages"][-3:] if previous == "NEEDS_CLARIFICATION" else []) + [
@@ -368,7 +382,11 @@ class ResolutionService:
                     confidence=decision.confidence,
                     mode=session["mode"],
                 )
-                if intent == "unknown" or (intent == "network" and decision.service == "unknown"):
+                if (
+                    decision.confidence < 0.6
+                    or intent == "unknown"
+                    or (intent == "network" and decision.service == "unknown")
+                ):
                     self.state(session, trace_id, "NEEDS_CLARIFICATION")
                     self.store.emit(
                         "clarification.requested",
@@ -421,6 +439,9 @@ class ResolutionService:
                                 "caseId": existing["caseId"],
                             },
                         )
+                    if existing.get("status") == "pending" and time.time() - existing["created"] > 600:
+                        existing["status"] = "expired"
+                        self.store.emit("action.expired", trace_id, session["id"], actionId=existing["id"])
                     if session.get("pending") and session["pending"]["status"] in (
                         "pending",
                         "executing",

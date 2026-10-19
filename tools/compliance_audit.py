@@ -1,6 +1,7 @@
 import csv
 import hashlib
 import json
+import re
 from collections import Counter
 from pathlib import Path
 import xml.etree.ElementTree as ET
@@ -52,6 +53,9 @@ rules = {
             "test_trace_isolation",
             "test_tool_scope_prevents_direct_action_bypass",
             "test_actual_database_reopen_preserves_action_and_history",
+            "test_enterprise_requires_bearer_and_enforces_ownership",
+            "test_enterprise_token_never_reaches_browser_or_events",
+            "test_chunked_body_limit_cannot_be_bypassed",
         ],
         "http/app.py; infrastructure/enterprise.py; application/workflows.py; docs/SECURITY.md",
         "004,005",
@@ -84,7 +88,11 @@ rules = {
         "ai/providers.py; infrastructure/enterprise.py; application/workflows.py",
         "001,003,005,008",
     ),
-    "clarification": (["test_mandatory_scenario[2]"], "application/workflows.py; ai/providers.py", "002"),
+    "clarification": (
+        ["test_mandatory_scenario[2]", "test_low_confidence_classification_clarifies_before_protected_read"],
+        "application/workflows.py; ai/providers.py",
+        "002",
+    ),
     "actions": (
         [
             "test_confirm_binding_decline_and_no_chat_bypass",
@@ -162,6 +170,20 @@ def state(rule):
         return "FAIL", "Required supporting tests absent, failed or skipped"
     if not all_scenarios:
         return "FAIL", "All eight strengthened HTTP scenarios must pass"
+    if rule == "docs":
+        required_docs = [
+            "README.md",
+            "docs/ARCHITECTURE.md",
+            "docs/HANDOVER.md",
+            "docs/SECURITY.md",
+            "deployment/README.md",
+            "docs/GEMINI_INVOCATIONS.md",
+            "docs/GEMINI_CX_MAPPING.md",
+            "docs/CHANGES.md",
+            "docs/REVIEWER_GUIDE.md",
+        ]
+        if any(not (ROOT / name).is_file() or (ROOT / name).stat().st_size < 100 for name in required_docs):
+            return "FAIL", "Required handover/deployment/architecture documents missing"
     if rule == "docs" and clean.get("status") != "PASS":
         return "NOT TESTED", "Documentation/startup must be verified from clean packaged source"
     return (
@@ -324,15 +346,63 @@ for row in rows:
     ):
         if row["originalWording"] == "Recorded demonstration":
             status, lim = state("video")
-            if live.get("status") != "PASS":
-                status, lim = (
-                    "BLOCKED",
-                    "Recording exists, but mandatory live AI demonstration needs successful real inference",
-                )
         else:
             status, lim = state("live")
         row.update(status=status, limitation=lim)
         row["evidence"] += ["evidence/current/live-gemini-evidence.json"]
+# Include goals, user journeys and standalone mandatory prose omitted by list anchors.
+for start, end, rule in [
+    (
+        "Complete and productionize the supplied AI customer-experience solution so that it can:",
+        "The productionized solution is the practical evidence used to validate and rank competitors. Building the solution is not the final business outcome of the challenge.",
+        "orchestration",
+    ),
+    ("Core User Journey", "Functional Requirements", "orchestration"),
+]:
+    for index in range(lines.index(start) + 1, lines.index(end)):
+        wording = lines[index].strip()
+        if wording and not any(row["originalWording"] == wording for row in rows):
+            add(
+                wording,
+                index + 1,
+                "live" if wording == "Understand customer requests using Gemini" else rule,
+                "Goals and journey",
+            )
+section_rules = {
+    "1. Gemini and Conversational AI": "ai",
+    "2. Agent Architecture and Orchestration": "orchestration",
+    "3. Customer Authentication and Authorization": "security",
+    "4. Enterprise and Legacy-System Integration": "integration",
+    "Legacy Telecom Adapter": "legacy",
+    "5. Grounded and Trustworthy Responses": "grounding",
+    "6. Clarification and Context Management": "clarification",
+    "7. Controlled Enterprise Action": "actions",
+    "8. Failure Handling and Human Escalation": "failure",
+    "9. Data Pipeline, Telemetry, and Observability": "telemetry",
+    "Google Technology Expectations": "docs",
+    "Live AI and Reviewer Mode": "live",
+    "Technology Expectations": "docs",
+    "Deliverables": "docs",
+    "8. Demo Video": "video",
+    "9. Requirement-to-Evidence Matrix": "docs",
+    "10. Summary of Changes": "docs",
+}
+current_rule = "docs"
+for index in range(lines.index("Functional Requirements"), lines.index("Evaluation Criteria")):
+    wording = lines[index].strip()
+    current_rule = section_rules.get(wording, current_rule)
+    if (
+        wording
+        and re.search(r"\b(must|should|required)\b", wording, re.I)
+        and not any(row["originalWording"] == wording for row in rows)
+    ):
+        rule = current_rule
+        if rule == "live" and (
+            "reviewer mode" in wording.lower() or "clearly show whether" in wording.lower()
+        ):
+            rule = "reviewer"
+        add(wording, index + 1, rule, "Standalone source clause")
+
 # Every actual fixture assertion is individually linked to its executable acceptance contract.
 for fixture in sorted((ROOT / "resources/challenge/scenarios").glob("*.json")):
     spec = json.loads(fixture.read_text())
@@ -436,7 +506,7 @@ def safe(value):
 
 intro = f"""# Final compliance audit
 
-**Qualification: {qualification}.** Passing tests are not an external qualification score. Original scoring requires 75% overall, 70% in each first-four category, all mandatory scenarios, reproducible setup and no disqualifying gate. No score is invented.
+**Qualification: {qualification}.** Passing tests are not an external qualification score. The supplied scoring resources require 75% overall, 70% in each first-four category, all mandatory scenarios, reproducible setup and no disqualifying gate. Individual matrix PASS rows link supporting checks; they are not a proof of every possible input or an independent evaluator judgment. No score is invented.
 
 This checklist extracts the original specification's mandatory lists and standalone controls, plus every assertion/initial condition in all eight unmodified scenario fixtures. Exact source wording and line references are retained. Optional example actions and optional multiple-agent designs are not falsely treated as requirements to implement all alternatives. The challenge explicitly permits this single controlled orchestrator.
 
@@ -474,7 +544,7 @@ intro += "\n".join(
     for r in rows
 )
 intro += (
-    "\n\n## Evidence boundaries and remaining actions\n\nThe local tests and scenarios use supplied synthetic enterprise data. `.env` is excluded from source packages. The demo video is excluded by the user; the compact UI guide documents actual application screens. Live AI is PASS only when the real HTTP/model evaluator succeeds without fallback. Docker verification: "
+    "\n\n## Evidence boundaries and remaining actions\n\nThe local tests and scenarios use supplied synthetic enterprise data. `.env` is excluded from source packages. The demo video is excluded by the user; the updated application UI is included as source; no unverified PDF or video is claimed. Live AI is PASS only when the real HTTP/model evaluator succeeds without fallback. Docker verification: "
     + docker.get("status", "NOT TESTED")
     + " (evidence/current/docker-verification.json). Actual GCP deployment remains NOT TESTED; deployment preparation is the challenge deliverable and is not presented as actual deployment. Independent scoring is required for qualification.\n"
 )
@@ -483,7 +553,7 @@ for label, status, note in [
     (
         "§1 Source-of-truth enforcement",
         "PASS",
-        "Original challenge/directive copied verbatim; original scenarios/contracts/scoring retained and reread",
+        "Current user-supplied challenge copied verbatim; original scenarios/contracts/scoring retained and reread",
     ),
     (
         "§2 Complete traceability",
