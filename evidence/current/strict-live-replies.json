@@ -1,0 +1,25 @@
+{
+  "scope": "Strict live reply hotfix; not a full release audit",
+  "verifiedAt": "2026-10-19T11:20:47.450629+00:00",
+  "elapsedSeconds": 1.86,
+  "mode": "DEGRADED",
+  "state": "ESCALATED",
+  "answer": "Gemini is currently rate limited. I couldn't complete your live AI request. No fallback answer was used. Your request has been saved for review.",
+  "providerError": "provider_http_429",
+  "modelReplyValidated": false,
+  "fallback": false,
+  "stages": [
+    {
+      "status": "failure",
+      "operation": "interpret",
+      "reason": "provider_http_429",
+      "durationMs": 1716.4952620000804
+    }
+  ],
+  "backendTestsPassed": 120,
+  "frontendTestsPassed": 6,
+  "typecheck": "passed",
+  "frontendProductionBuild": "passed",
+  "enterpriseData": "challenge fixtures",
+  "liveFallbackPolicy": "no deterministic answers"
+}

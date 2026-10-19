@@ -33,7 +33,7 @@ def test_adk_runner_calls_authorized_account_tool(stack, customer):
         replies=[
             answer({"intent": "account", "service": "unknown", "confidence": 1.0}),
             tool("read_account"),
-            answer({"fact_ids": [0]}),
+            answer({"fact_ids": [0], "answer": "Your active account uses Fiber 500 at 79.99 per month."}),
         ],
     )
     service.ai = AdkProvider(model=model)
@@ -69,7 +69,9 @@ def test_adk_caches_repeated_read_tool_calls(stack, customer):
             answer({"intent": "billing", "service": "unknown", "confidence": 1.0}),
             tool("read_billing"),
             tool("read_billing"),
-            answer({"fact_ids": [0, 1, 2]}),
+            answer(
+                {"fact_ids": [0, 1, 2], "answer": "Here are the verified billing details for your account."}
+            ),
         ],
     )
     service.ai = AdkProvider(model=model)
@@ -81,7 +83,7 @@ def test_adk_caches_repeated_read_tool_calls(stack, customer):
     )
 
 
-def test_adk_missing_required_tool_is_visible_fallback(stack, customer):
+def test_adk_missing_required_tool_stops_live_request(stack, customer):
     service = stack[0]
     service.mode = "LIVE_AI"
     service.ai = AdkProvider(
@@ -94,9 +96,10 @@ def test_adk_missing_required_tool_is_visible_fallback(stack, customer):
         )
     )
     result = service.chat(customer, Chat(message="My plan"))
-    assert result["mode"] == "DEGRADED" and "Fiber 500" in result["answer"]
+    assert result["mode"] == "DEGRADED" and result["state"] == "ESCALATED"
+    assert "Fiber 500" not in result["answer"]
     assert any(
-        event["eventType"] == "provider.fallback"
+        event["eventType"] == "provider.unavailable"
         for event in service.store.events()
         if event["traceId"] == result["traceId"]
     )

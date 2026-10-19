@@ -1,0 +1,12 @@
+{
+  "scope": "Final reply schema hotfix; not a full release audit",
+  "state": "RESOLVED",
+  "mode": "LIVE_AI",
+  "answer": "I understand your mobile data is not working. I checked our network service reports, which show normal status with no incidents, and your subscriber status is active as of October 13, 2026. A device diagnostics check returned no device fault detected. Please note that a normal network report does not guarantee your device or connection is functioning properly, so the specific cause of your issue remains unknown.",
+  "elapsedSeconds": 7.047,
+  "providerError": null,
+  "rejectionReasons": [],
+  "modelReplyValidated": true,
+  "fallback": false,
+  "backendTestsPassed": 124
+}

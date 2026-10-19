@@ -1,0 +1,11 @@
+{
+  "scope": "Mobile legacy hotfix verification; not a full release audit",
+  "query": "the mobile data is not working",
+  "mode": "DEGRADED",
+  "state": "RESOLVED",
+  "answer": "Network service reports normal; incident none. Diagnostics: no_device_fault_detected. Legacy XML: subscriber active; network normal; observed 2026-10-13T08:30:00Z.",
+  "elapsedSeconds": 10.485,
+  "legacyToolSucceeded": true,
+  "fallback": true,
+  "backendTestsPassed": 114
+}

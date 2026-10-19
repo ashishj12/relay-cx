@@ -1,0 +1,12 @@
+{
+  "scope": "Service-scope hotfix; not a full release audit",
+  "query": "moblie data is not working",
+  "state": "NEEDS_CLARIFICATION",
+  "mode": "LIVE_AI",
+  "answer": "This account has home internet service, but no mobile service. Did you mean home internet? To check mobile, sign in with the account that owns it.",
+  "providerError": null,
+  "elapsedSeconds": 9.766,
+  "backendTestsPassed": 122,
+  "fallback": false,
+  "mobileDiagnosticsRead": false
+}

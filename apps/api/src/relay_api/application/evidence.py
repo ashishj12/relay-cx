@@ -9,6 +9,14 @@ from relay_api.infrastructure.enterprise import Gateway, IntegrationError
 class EvidenceBundle:
     facts: list[str]
     conflict: str | None = None
+    customer_reply: str | None = None
+
+
+class ServiceNotOnAccount(IntegrationError):
+    def __init__(self, requested: str, available: list[str]):
+        super().__init__("account-service", "service_not_owned")
+        self.requested = requested
+        self.available = available
 
 
 class EnterpriseEvidence:
@@ -36,7 +44,7 @@ class EnterpriseEvidence:
             (item for item in account.services if decision.service in ("unknown", item.type)), None
         )
         if service is None:
-            raise IntegrationError("account-service", "service_not_owned")
+            raise ServiceNotOnAccount(decision.service, sorted({item.type for item in account.services}))
         facts: list[str] = []
         session["facts"] = facts
         outage = None

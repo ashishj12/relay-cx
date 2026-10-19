@@ -1,0 +1,24 @@
+{
+  "status": "PASS",
+  "scope": "Provider retry hotfix, not a fresh full release audit",
+  "backendTests": 108,
+  "regressions": [
+    "503 twice then success",
+    "503 exhaustion stops at three attempts",
+    "401 is not retried"
+  ],
+  "liveDockerCheck": {
+    "model": "gemini-3.6-flash",
+    "mode": "LIVE_AI",
+    "state": "RESOLVED",
+    "groundedAccountAnswer": true,
+    "successfulModelStages": [
+      "interpret",
+      "select"
+    ],
+    "providerFailures": []
+  },
+  "changedRuntime": "apps/api/src/relay_api/agents/runtime.py",
+  "runtimeSha256": "155ca69ed9253024a825937156e061ee936eb62aefae809193d85878d31af8c5",
+  "limits": "Persistent provider unavailability still falls back; existing agent deadline applies."
+}

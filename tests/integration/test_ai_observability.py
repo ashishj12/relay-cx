@@ -43,7 +43,7 @@ def test_sdk_client_timeout_and_credential_configuration(monkeypatch):
     AdkProvider().model()
     kwargs = factory.call_args.kwargs
     assert kwargs["http_options"].timeout == 3000
-    assert kwargs["http_options"].retry_options.attempts == 1
+    assert kwargs["http_options"].retry_options.attempts == 3
 
 
 def test_partial_failure_keeps_degraded_badge(stack, customer):
@@ -66,7 +66,7 @@ def test_live_success_with_validated_double(stack, customer):
             replies=[
                 answer({"intent": "account", "service": "unknown", "confidence": 0.9}),
                 tool("read_account"),
-                answer({"fact_ids": [0]}),
+                answer({"fact_ids": [0], "answer": "Your active account uses Fiber 500 at 79.99 per month."}),
             ],
         )
     )
@@ -107,14 +107,18 @@ def test_grounded_selection_rejects_fabrication(text):
         RuntimeError("invalid_credentials"),
     ],
 )
-def test_live_provider_fallback(stack, customer, failure):
+def test_live_provider_failure_does_not_use_reviewer(stack, customer, failure):
     app, _, _ = stack
     app.mode = "LIVE_AI"
     app.ai = Mock()
     app.ai.interpret.side_effect = failure
     app.ai.select.side_effect = failure
     r = app.chat(customer, Chat(message="my plan"))
-    assert r["mode"] == "DEGRADED" and "Fiber 500" in r["answer"]
+    assert r["mode"] == "DEGRADED" and r["state"] == "ESCALATED"
+    assert "Fiber 500" not in r["answer"] and not r["facts"]
+    assert "No fallback answer was used" in r["answer"]
+    app.ai.select.assert_not_called()
+    assert not any(e["eventType"] == "provider.fallback" for e in app.store.trace_events(r["traceId"]))
     assert (
         len(
             [
@@ -125,7 +129,7 @@ def test_live_provider_fallback(stack, customer, failure):
                 and e["status"] == "failure"
             ]
         )
-        == 2
+        == 1
     )
 
 

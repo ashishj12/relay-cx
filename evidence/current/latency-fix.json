@@ -1,0 +1,25 @@
+{
+  "scope": "Latency hotfix; one live request, not a full release audit",
+  "elapsedSeconds": 4.407,
+  "mode": "LIVE_AI",
+  "state": "RESOLVED",
+  "groundedPlanPresent": true,
+  "stages": [
+    {
+      "operation": "interpret",
+      "durationMs": 2282.275701999879,
+      "status": "success",
+      "reason": null
+    },
+    {
+      "operation": "select",
+      "durationMs": 2004.5922220001557,
+      "status": "success",
+      "reason": null
+    }
+  ],
+  "singleFactSummarySkipped": true,
+  "fallback": false,
+  "backendTestsPassed": 112,
+  "configuredStageTimeoutSeconds": 15
+}

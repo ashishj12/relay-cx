@@ -31,6 +31,10 @@ class Selection(Strict):
     fact_ids: list[int] = Field(max_length=20)
 
 
+class GroundedReply(Selection):
+    answer: str = Field(min_length=1, max_length=1800)
+
+
 class Enterprise(BaseModel):
     model_config = ConfigDict(allow_inf_nan=False, strict=True, str_max_length=2000)
 

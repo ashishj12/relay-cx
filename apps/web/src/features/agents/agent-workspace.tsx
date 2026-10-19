@@ -76,8 +76,8 @@ export function AgentWorkspace({
             {session.mode === "REVIEWER"
               ? "Reviewer mode uses deterministic interpretation."
               : session.mode === "LIVE_AI"
-                ? "Live mode runs Google ADK agents with Gemini."
-                : "The provider is degraded; deterministic controls remain active."}
+                ? "Live mode uses Gemini to write replies from verified challenge records."
+                : "The provider is degraded. Check the execution trace for the failure reason."}
           </strong>
           <p>
             The catalog below describes the configured system. Execution history

@@ -3,6 +3,14 @@ import re
 from relay_api.domain.models import Interpretation
 
 
+class LiveAiUnavailable(Exception):
+    """A live request must stop when its required model stage fails."""
+
+    def __init__(self, reason):
+        self.reason = reason
+        super().__init__(reason)
+
+
 def provider_reason(error):
     if isinstance(error, TimeoutError):
         return "provider_timeout"

@@ -31,6 +31,24 @@ def find(xs, k, v):
     return next((x for x in xs if x.get(k) == v), None)
 
 
+def load_legacy_records():
+    # Keep an independent snapshot so discrepancies between the legacy system
+    # and the network API remain visible during failure scenarios.
+    records = {}
+    for account in ACCOUNTS:
+        customer = find(CUSTOMERS, "customerId", account["customerId"])
+        network = find(OUTAGES, "postalCode", customer["postalCode"])
+        for service in account["services"]:
+            records[(account["accountId"], service["serviceId"])] = {
+                "subscriberStatus": service["status"],
+                "networkStatus": network["status"] if network else "unknown",
+            }
+    return records
+
+
+LEGACY_RECORDS = load_legacy_records()
+
+
 class H(BaseHTTPRequestHandler):
     def handle(self):
         try:
@@ -222,20 +240,22 @@ class H(BaseHTTPRequestHandler):
                     acct = svc = ""
                 if not self.owns(customer, account=acct, service=svc):
                     return
-                code = "0" if acct == "ACC-2001" and svc == "SVC-5001" else "101"
-                raw = (
-                    "<SubscriberStatusResponse><ACCT_NO>"
-                    + str(acct)
-                    + "</ACCT_NO><SVC_NO>"
-                    + str(svc)
-                    + "</SVC_NO><SVC_STAT>"
-                    + ("A" if code == "0" else "")
-                    + "</SVC_STAT><NET_STAT>"
-                    + ("DEGRADED" if code == "0" else "")
-                    + "</NET_STAT><ERR_CD>"
-                    + code
-                    + "</ERR_CD><RESP_TS>2026-10-13T08:30:00Z</RESP_TS></SubscriberStatusResponse>"
-                ).encode()
+                record = LEGACY_RECORDS[(acct, svc)]
+                # Translate the authorized legacy record into its XML contract.
+                response = ET.Element("SubscriberStatusResponse")
+                fields = {
+                    "ACCT_NO": acct,
+                    "SVC_NO": svc,
+                    "SVC_STAT": {"active": "A", "suspended": "S", "inactive": "I"}.get(
+                        record["subscriberStatus"], "unknown"
+                    ),
+                    "NET_STAT": record["networkStatus"].upper(),
+                    "ERR_CD": "0",
+                    "RESP_TS": "2026-10-13T08:30:00Z",
+                }
+                for name, value in fields.items():
+                    ET.SubElement(response, name).text = value
+                raw = ET.tostring(response, encoding="utf-8")
             self.send_response(200)
             self.send_header("Content-Type", "application/xml")
             self.send_header("Content-Length", str(len(raw)))

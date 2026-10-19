@@ -157,7 +157,10 @@ export function Conversation({
         <h1>
           How can we help{overview ? `, ${overview.name.split(" ")[0]}` : ""}?
         </h1>
-        <p>Ask about your plan, bill or connection. We’ll take it from here.</p>
+        <p>
+          Ask about your plan, bill or connection. This challenge workspace uses
+          sample account and network records; live mode uses Gemini to answer.
+        </p>
       </div>
       <div className="account-ribbon">
         {overview ? (
@@ -268,7 +271,11 @@ export function Conversation({
                 <span />
                 <span />
                 <span />
-                <span>Checking the next step…</span>
+                <span>
+                  {session.mode === "LIVE_AI"
+                    ? "Waiting for Gemini and verified service results…"
+                    : "Checking the next step…"}
+                </span>
               </div>
             )}
             {pending && (

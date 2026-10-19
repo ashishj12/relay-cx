@@ -4,9 +4,9 @@ import re
 import secrets
 import time
 from relay_api.infrastructure.enterprise import Gateway, Denied, IntegrationError
-from relay_api.ai.providers import Reviewer, redact, provider_reason
+from relay_api.ai.providers import LiveAiUnavailable, Reviewer, redact, provider_reason
 from relay_api.agents.runtime import AdkProvider
-from relay_api.application.evidence import EnterpriseEvidence
+from relay_api.application.evidence import EnterpriseEvidence, ServiceNotOnAccount
 from relay_api.infrastructure.storage import Store, digest, uid
 
 TRANSITIONS = {
@@ -19,7 +19,12 @@ TRANSITIONS = {
         "FAILED",
         "ESCALATED",
     },
-    "FETCHING_ENTERPRISE_DATA": {"ANALYZING_RESULTS", "AWAITING_CONFIRMATION", "ESCALATED"},
+    "FETCHING_ENTERPRISE_DATA": {
+        "ANALYZING_RESULTS",
+        "AWAITING_CONFIRMATION",
+        "NEEDS_CLARIFICATION",
+        "ESCALATED",
+    },
     "ANALYZING_RESULTS": {"RESOLVED", "ESCALATED"},
     "EXECUTING_ACTION": {"VERIFYING_ACTION", "ESCALATED"},
     "VERIFYING_ACTION": {"RESOLVED", "ESCALATED"},
@@ -185,6 +190,17 @@ class ResolutionService:
                 reason=provider_reason(error),
                 simulated=session.get("failures", {}).get("gemini") == "unavailable",
             )
+            if self.mode == "LIVE_AI":
+                session["mode"] = "DEGRADED"
+                self.store.emit(
+                    "provider.unavailable",
+                    trace_id,
+                    session["id"],
+                    status="failure",
+                    operation=operation,
+                    reason=provider_reason(error),
+                )
+                raise LiveAiUnavailable(provider_reason(error)) from error
             self.store.emit(
                 "provider.fallback",
                 trace_id,
@@ -213,7 +229,7 @@ class ResolutionService:
         self.ai.emit = lambda kind, **metadata: self.store.emit(kind, trace_id, session["id"], **metadata)
         started = time.monotonic()
         try:
-            bundle, order = self.ai.gather(decision, collect)
+            bundle, order = self.ai.gather(decision, collect, question=session["messages"][-1])
             self.store.emit(
                 "ai.finished",
                 trace_id,
@@ -241,6 +257,17 @@ class ResolutionService:
                 reason=provider_reason(error),
                 duration=(time.monotonic() - started) * 1000,
             )
+            if self.mode == "LIVE_AI":
+                session["mode"] = "DEGRADED"
+                self.store.emit(
+                    "provider.unavailable",
+                    trace_id,
+                    session["id"],
+                    status="failure",
+                    operation="select",
+                    reason=provider_reason(error),
+                )
+                raise LiveAiUnavailable(provider_reason(error)) from error
             self.store.emit("provider.fallback", trace_id, session["id"], reason=provider_reason(error))
             session["_ai_failed"] = True
             session["mode"] = "DEGRADED"
@@ -494,13 +521,54 @@ class ResolutionService:
                 self.state(session, trace_id, "ANALYZING_RESULTS")
                 if order is None:
                     order = self.ai_call(session, trace_id, "select", facts)
-                answer = " ".join(facts[i] for i in order)
+                answer = (
+                    bundle.customer_reply
+                    if isinstance(self.ai, AdkProvider)
+                    else " ".join(facts[i] for i in order)
+                )
+                if not answer:
+                    raise LiveAiUnavailable("invalid_model_output")
                 self.state(session, trace_id, "RESOLVED")
                 self.store.emit("workflow.resolved", trace_id, session["id"])
                 return self.finish(session, trace_id, start, {"answer": answer})
+            except LiveAiUnavailable as error:
+                result = self.escalation(session, trace_id, "live_ai:" + error.reason)
+                explanation = {
+                    "provider_http_429": "Gemini is currently rate limited.",
+                    "provider_timeout": "Gemini did not respond within the time limit.",
+                    "configuration_missing": "Live AI is not configured.",
+                    "invalid_model_output": "Gemini did not return a valid response.",
+                }.get(error.reason, "Gemini is currently unavailable.")
+                result["answer"] = (
+                    explanation + " I couldn't complete your live AI request. "
+                    "No fallback answer was used. Your request has been saved for review."
+                )
+                result["providerError"] = error.reason
+                return self.finish(session, trace_id, start, result, True)
             except Denied:
                 session["state"] = "FAILED"
                 return self.finish(session, trace_id, start, {"answer": "Account access denied."}, True)
+            except ServiceNotOnAccount as error:
+                self.state(session, trace_id, "NEEDS_CLARIFICATION")
+                self.store.emit(
+                    "clarification.requested",
+                    trace_id,
+                    session["id"],
+                    status="pending",
+                    missingInformation="service_on_signed_in_account",
+                    availableServices=error.available,
+                )
+                available = ", ".join(value.replace("-", " ") for value in error.available)
+                requested = error.requested.replace("-", " ")
+                return self.finish(
+                    session,
+                    trace_id,
+                    start,
+                    {
+                        "answer": f"This account has {available} service, but no {requested} service. "
+                        f"Did you mean {available}? To check {requested}, sign in with the account that owns it."
+                    },
+                )
             except IntegrationError as error:
                 return self.finish(
                     session,
