@@ -33,6 +33,15 @@
       "roles": [
         "support-agent"
       ]
+    },
+    {
+      "customerId": "AGENT-3001",
+      "name": "Taylor Smith",
+      "username": "admin",
+      "testPassword": "admin@123",
+      "roles": [
+        "support-agent"
+      ]
     }
   ]
 }

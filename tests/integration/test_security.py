@@ -48,6 +48,19 @@ def test_http_auth_and_roles(stack):
         assert c.get("/api/session").status_code == 401
 
 
+def test_admin_sample_credentials_grant_support_workspace(stack):
+    _, _, url = stack
+    with httpx.Client(base_url=url, trust_env=False) as client:
+        response = login(client, "admin", "admin@123")
+        assert response.status_code == 200
+        assert response.json()["roles"] == ["support-agent"]
+        assert client.get("/api/ops/metrics").status_code == 200
+        assert client.post("/api/reviewer/run", json={"scenarioId": "SCN-001"}).status_code == 200
+
+    with httpx.Client(base_url=url, trust_env=False) as client:
+        assert login(client, "admin", "wrong-password").status_code == 401
+
+
 def test_trace_isolation(stack):
     _, _, url = stack
     with httpx.Client(base_url=url, trust_env=False) as a, httpx.Client(base_url=url, trust_env=False) as b:

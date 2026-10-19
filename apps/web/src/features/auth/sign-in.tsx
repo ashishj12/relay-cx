@@ -33,6 +33,12 @@ const accounts = [
     password: "ReviewerPass-3001",
     role: "Operations & evaluation",
   },
+  {
+    name: "Admin",
+    username: "admin",
+    password: "admin@123",
+    role: "Operations & evaluation",
+  },
 ];
 
 export function SignIn({

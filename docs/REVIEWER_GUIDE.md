@@ -15,7 +15,7 @@ docker compose -p relay-review up --build --wait
 Open `http://127.0.0.1:3000`.
 
 - Sign in as Alex to try the customer pages.
-- Sign in as `support.agent` to see Operations and Evaluation.
+- Sign in as `support.agent` or `admin` to see Operations and Evaluation.
 - The sample usernames and passwords are in the main
   [README](../README.md).
 

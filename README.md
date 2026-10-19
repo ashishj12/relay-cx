@@ -69,6 +69,7 @@ Use one of these sample accounts:
 | Alex Morgan | `alex.morgan` | `ReviewerPass-1001` |
 | Jordan Lee | `jordan.lee` | `ReviewerPass-1002` |
 | Support staff | `support.agent` | `ReviewerPass-3001` |
+| Admin | `admin` | `admin@123` |
 
 These accounts and passwords are fake and are only for this demo. Never use
 them for a real service.
