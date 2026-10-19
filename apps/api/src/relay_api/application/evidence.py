@@ -27,17 +27,16 @@ class EnterpriseEvidence:
         """Resolve identifiers from authenticated records, never model arguments."""
         profile = self.gateway.profile(session, trace_id)
         account = self.gateway.account(session, trace_id, session["accountId"])
+        plan_fact = (
+            f"Account service: your plan is {account.plan.name}; monthly plan price "
+            f"{account.plan.monthlyPrice:.2f}; account status {account.status}."
+        )
         if decision.intent == "account":
-            return EvidenceBundle(
-                [
-                    f"Account service: your plan is {account.plan.name}; monthly plan price "
-                    f"{account.plan.monthlyPrice:.2f}; account status {account.status}."
-                ]
-            )
+            return EvidenceBundle([plan_fact])
         if decision.intent == "billing":
             bill = self.gateway.billing(session, trace_id, account.accountId)
             return EvidenceBundle(
-                [f"Billing service: {bill.period} total {bill.total:.2f}."]
+                [plan_fact, f"Billing service: {bill.period} total {bill.total:.2f}."]
                 + [f"Billing item: {item.description}: {item.amount:.2f}." for item in bill.items]
             )
         service = next(

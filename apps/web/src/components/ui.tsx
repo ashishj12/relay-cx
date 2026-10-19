@@ -30,7 +30,7 @@ export function ModeBadge({ mode }: { mode: Mode }) {
       {mode === "LIVE_AI"
         ? "Live AI"
         : mode === "DEGRADED"
-          ? "Degraded mode"
+          ? "Assistant unavailable"
           : "Reviewer mode"}
     </span>
   );

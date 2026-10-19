@@ -6,6 +6,10 @@ services:
     environment:
       MOCK_ALLOW_FAILURES: "false"
     restart: unless-stopped
+    volumes:
+      - type: bind
+        source: /srv/relay/enterprise-data
+        target: /app/data
   api:
     image: ${RELAY_API_IMAGE:?Set RELAY_API_IMAGE to the pushed API image digest}
     environment:

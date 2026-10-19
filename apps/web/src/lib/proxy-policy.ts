@@ -7,6 +7,7 @@ const paths = new Set([
   "activity",
   "chat",
   "confirm",
+  "handoff",
   "scenarios",
   "account/overview",
   "reviewer/run",

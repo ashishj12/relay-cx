@@ -1,0 +1,28 @@
+{
+  "status": "PASS",
+  "originPort": 3000,
+  "checks": [
+    {
+      "host": "localhost",
+      "home": 200,
+      "health": 200,
+      "invalidLogin": 401,
+      "validLogin": 200,
+      "sessionRestored": true,
+      "mode": "LIVE_AI",
+      "logout": "PASS"
+    },
+    {
+      "host": "127.0.0.1",
+      "home": 200,
+      "health": 200,
+      "invalidLogin": 401,
+      "validLogin": 200,
+      "sessionRestored": true,
+      "mode": "LIVE_AI",
+      "logout": "PASS"
+    }
+  ],
+  "liveInferenceTested": false,
+  "environmentPreserved": true
+}

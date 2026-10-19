@@ -1,0 +1,35 @@
+{
+  "status": "PASS_WITH_LIMITATIONS",
+  "mode": "REVIEWER",
+  "origin": "http://127.0.0.1:3110",
+  "suppliedAccount": "Jordan Lee / ACC-2002",
+  "rahulCredentialsSupplied": false,
+  "desktopChecked": true,
+  "phoneViewport": {
+    "width": 390,
+    "height": 844
+  },
+  "planAndBill": "Mobile Unlimited; 65.00; bill period 2026-09 total 65.00",
+  "connectionClarification": "Did you mean mobile?",
+  "earlierBillingRepeat": {
+    "observed": true,
+    "fixedAndRetested": true,
+    "regression": "test_dropping_connection_does_not_reuse_previous_billing_intent"
+  },
+  "caseApproval": true,
+  "confirmedCaseId": "CASE-EB46F103",
+  "reauthenticatedHistoryRestored": true,
+  "foreignAccountReply": "Account access denied.",
+  "unsupportedPlanChangeExplained": true,
+  "unsupportedTaxiExplained": true,
+  "humanHandoffWithoutModel": true,
+  "handoffReference": "ESC-796ac43fe0ec4445baed0628763370df",
+  "demoCallbackLimitExplained": true,
+  "actualNextDayBrowserVisit": false,
+  "liveGeminiSuccessVerified": false,
+  "report": "docs/CUSTOMER_RETEST.md",
+  "screenshots": [
+    "customer-after-desktop.png",
+    "customer-after-phone.png"
+  ]
+}

@@ -3,6 +3,8 @@ from copy import deepcopy
 import re
 import secrets
 import time
+from contextlib import contextmanager
+from contextvars import ContextVar
 from relay_api.infrastructure.enterprise import Gateway, Denied, IntegrationError
 from relay_api.ai.providers import LiveAiUnavailable, Reviewer, redact, provider_reason
 from relay_api.agents.runtime import AdkProvider
@@ -32,9 +34,26 @@ TRANSITIONS = {
 
 
 class ResolutionService:
+    @property
+    def ai(self):
+        return self._request_provider.get() or self._ai
+
+    @ai.setter
+    def ai(self, provider):
+        self._ai = provider
+
+    @contextmanager
+    def provider_scope(self):
+        provider = AdkProvider(model=self._ai._model) if isinstance(self._ai, AdkProvider) else self._ai
+        token = self._request_provider.set(provider)
+        try:
+            yield
+        finally:
+            self._request_provider.reset(token)
+
     def overview(self, session):
         """An independent authorized read; never changes an in-flight chat/action."""
-        with self.store.lock:
+        with self.store.workflow(session):
             context = deepcopy(session)
             context["state"] = "NEW"
             trace = uid("TRACE")
@@ -70,6 +89,7 @@ class ResolutionService:
                 raise
 
     def __init__(self, database=None, base=None):
+        self._request_provider = ContextVar("request_provider", default=None)
         self.mode = os.getenv("APP_MODE", "REVIEWER").upper()
         if self.mode not in ("REVIEWER", "LIVE_AI", "DEGRADED"):
             raise ValueError("Invalid APP_MODE")
@@ -114,7 +134,12 @@ class ResolutionService:
             failures={},
             mode=self.mode,
         )
-        self.store.save(session)
+        with self.store.workflow(session):
+            session.update(self.store.account_context(session))
+            session["messages"] = session.get("messages") or []
+            session["history"] = session.get("history") or []
+            session["pending"] = self.store.outstanding_action(session)
+            self.store.save(session)
         self.store.emit("session.created", trace_id, session["id"])
         self.store.emit("authentication.succeeded", trace_id, session["id"])
         return token, session
@@ -219,6 +244,7 @@ class ResolutionService:
             nonlocal cached
             if cached is None:
                 cached = self.evidence.collect(session, trace_id, decision)
+                session["facts"] = list(cached.facts)
             return cached
 
         if not isinstance(self.ai, AdkProvider):
@@ -314,9 +340,35 @@ class ResolutionService:
         self.store.escalate(session["id"], record)
         self.state(session, trace_id, "ESCALATED")
         self.store.emit("workflow.escalated", trace_id, session["id"])
+        explanation = {
+            "customer_requested_handoff": "I've saved your request for the support team.",
+            "conflicting_or_unknown_network_status": "The network records disagree or are incomplete, so I can't verify the service status.",
+            "conflicting_subscriber_status": "The account and subscriber records disagree, so I can't verify the subscription status.",
+            "prior_action_requires_reconciliation": "A previous case request has an uncertain outcome. Support needs to check it before another attempt.",
+            "internal_processing_failure": "An internal error stopped this request. I've saved the available context for support.",
+        }.get(reason)
+        if explanation is None:
+            service, _, failure = reason.partition(":")
+            label = {
+                "billing": "billing",
+                "legacy-subscriber-status": "subscriber",
+                "account-service": "account",
+                "customer-profile": "customer profile",
+                "diagnostics": "diagnostic",
+                "network-outage": "network",
+            }.get(service)
+            if service == "case-management":
+                explanation = "I couldn't verify whether the case was opened. Support must check the outcome before retrying."
+            elif failure == "http_401":
+                explanation = "Your sign-in to the account services has expired. Sign out and sign in again to continue."
+            elif label:
+                explanation = f"The {label} information is unavailable or could not be verified. I've saved this request for support."
+            else:
+                explanation = (
+                    "I couldn't safely complete this request. I've saved the available context for support."
+                )
         return {
-            "answer": "This request needs human review. No new successful action is claimed. Handoff "
-            + record["escalationId"],
+            "answer": explanation + " Handoff reference: " + record["escalationId"],
             "escalationId": record["escalationId"],
         }
 
@@ -379,25 +431,69 @@ class ResolutionService:
         )
 
     def chat(self, session, data):
-        with self.store.lock:
+        with self.store.workflow(session), self.provider_scope():
             trace_id = uid("TRACE")
             start = time.monotonic()
             self.store.emit("request.received", trace_id, session["id"])
-            previous = session["state"]
             session["state"] = "NEW"
             session["facts"] = []
             session["_ai_failed"] = False
             session.setdefault("completedSteps", [])
             message = redact(data.message)
             session.setdefault("history", []).append({"role": "user", "text": message})
-            session["messages"] = (session["messages"][-3:] if previous == "NEEDS_CLARIFICATION" else []) + [
-                message
-            ]
+            session["messages"] = session["messages"][-3:] + [message]
             self.state(session, trace_id, "INTERPRETING")
             try:
                 account_references = re.findall(r"\bACC-\d+\b", data.message.upper())
                 for account in account_references + ([data.accountId] if data.accountId else []):
                     self.gateway.authorize(session, account, trace_id)
+                if re.search(
+                    r"\b(speak|talk|connect|transfer)\b.*\b(human|person|someone|representative)\b",
+                    message,
+                    re.I,
+                ):
+                    self.state(session, trace_id, "AUTHORIZATION_CHECK")
+                    self.gateway.authorize(session, session.get("accountId"), trace_id)
+                    return self.finish(session, trace_id, start, self.handoff_result(session, trace_id))
+                if re.search(r"\bbook\b.*\b(taxi|cab|flight|hotel)\b", message, re.I):
+                    self.state(session, trace_id, "NEEDS_CLARIFICATION")
+                    self.store.emit(
+                        "clarification.requested",
+                        trace_id,
+                        session["id"],
+                        missingInformation="supported_request",
+                        status="pending",
+                    )
+                    return self.finish(
+                        session,
+                        trace_id,
+                        start,
+                        {
+                            "answer": "I can't book taxis or travel. I can help with your account's plan, bill, "
+                            "connection or a support case. No booking has been made."
+                        },
+                    )
+                if re.search(r"\b(change|add|upgrade|downgrade|cancel)\b", message, re.I) and re.search(
+                    r"\b(plan|service|roaming|preference|subscription)\b", message, re.I
+                ):
+                    self.state(session, trace_id, "NEEDS_CLARIFICATION")
+                    self.store.emit(
+                        "clarification.requested",
+                        trace_id,
+                        session["id"],
+                        missingInformation="supported_action",
+                        status="pending",
+                    )
+                    return self.finish(
+                        session,
+                        trace_id,
+                        start,
+                        {
+                            "answer": "I can't change your plan, add a service or update preferences here. "
+                            "Nothing has been changed. I can check your plan or bill, check a connection, "
+                            "or propose a support case for you to approve. Would you like a support case?"
+                        },
+                    )
                 decision = self.ai_call(session, trace_id, "interpret", session["messages"])
                 intent = decision.intent
                 self.store.emit(
@@ -439,7 +535,7 @@ class ResolutionService:
                         session,
                         trace_id,
                         start,
-                        self.escalation(session, trace_id, "customer_requested_handoff"),
+                        self.handoff_result(session, trace_id),
                     )
                 self.state(session, trace_id, "AUTHORIZATION_CHECK")
                 account = data.accountId or session.get("accountId")
@@ -448,7 +544,9 @@ class ResolutionService:
                 if intent == "case":
                     self.gateway.profile(session, trace_id)
                     self.gateway.account(session, trace_id, account)
-                    existing = session.get("pending") or {}
+                    existing = self.store.outstanding_action(session) or session.get("pending") or {}
+                    if existing:
+                        session["pending"] = existing
                     if (
                         existing.get("status") == "completed"
                         and existing.get("summary") == message
@@ -468,6 +566,7 @@ class ResolutionService:
                         )
                     if existing.get("status") == "pending" and time.time() - existing["created"] > 600:
                         existing["status"] = "expired"
+                        self.store.save(session)
                         self.store.emit("action.expired", trace_id, session["id"], actionId=existing["id"])
                     if session.get("pending") and session["pending"]["status"] in (
                         "pending",
@@ -485,6 +584,29 @@ class ResolutionService:
                         )
                         session["pending"] = action
                     if action["status"] in ("executing", "uncertain"):
+                        try:
+                            receipt = self.gateway.case_receipt(session, trace_id, action)
+                        except IntegrationError:
+                            receipt = None  # An absent receipt never authorizes another write.
+                        if receipt is not None:
+                            action.update(status="completed", caseId=receipt.caseId)
+                            self.state(session, trace_id, "ANALYZING_RESULTS")
+                            self.state(session, trace_id, "RESOLVED")
+                            self.store.emit(
+                                "action.reconciled", trace_id, session["id"], caseId=receipt.caseId
+                            )
+                            self.store.emit("workflow.resolved", trace_id, session["id"])
+                            return self.finish(
+                                session,
+                                trace_id,
+                                start,
+                                {
+                                    "answer": "Your earlier support case is open. Case "
+                                    + receipt.caseId
+                                    + ". No additional case was created.",
+                                    "caseId": receipt.caseId,
+                                },
+                            )
                         return self.finish(
                             session,
                             trace_id,
@@ -534,14 +656,17 @@ class ResolutionService:
             except LiveAiUnavailable as error:
                 result = self.escalation(session, trace_id, "live_ai:" + error.reason)
                 explanation = {
-                    "provider_http_429": "Gemini is currently rate limited.",
-                    "provider_timeout": "Gemini did not respond within the time limit.",
-                    "configuration_missing": "Live AI is not configured.",
-                    "invalid_model_output": "Gemini did not return a valid response.",
-                }.get(error.reason, "Gemini is currently unavailable.")
+                    "provider_http_429": "The assistant is busy right now.",
+                    "provider_timeout": "The assistant took too long to reply.",
+                    "configuration_missing": "The assistant is not available right now.",
+                    "invalid_model_output": "I couldn’t verify a safe answer.",
+                }.get(error.reason, "The assistant is not available right now.")
                 result["answer"] = (
-                    explanation + " I couldn't complete your live AI request. "
-                    "No fallback answer was used. Your request has been saved for review."
+                    explanation + " I couldn't answer this request. I haven't changed your account. "
+                    "Your request has been saved for review. "
+                    "Reference: "
+                    + result["escalationId"]
+                    + ". You can use Request human support below. No response time is available here."
                 )
                 result["providerError"] = error.reason
                 return self.finish(session, trace_id, start, result, True)
@@ -584,3 +709,24 @@ class ResolutionService:
         from relay_api.application.case_actions import CaseActions
 
         return CaseActions(self).confirm(session, data)
+
+    def handoff(self, session):
+        """A customer can always request review without a model dependency."""
+        with self.store.workflow(session):
+            trace = uid("TRACE")
+            start = time.monotonic()
+            session["state"] = "NEW"
+            self.store.emit("request.received", trace, session["id"])
+            self.state(session, trace, "AUTHORIZATION_CHECK")
+            self.gateway.authorize(session, session.get("accountId"), trace)
+            session.setdefault("history", []).append({"role": "user", "text": "Request human support"})
+            return self.finish(session, trace, start, self.handoff_result(session, trace))
+
+    def handoff_result(self, session, trace):
+        result = self.escalation(session, trace, "customer_requested_handoff")
+        result["answer"] += (
+            " Your conversation and available account checks are saved with this reference. "
+            "This demo does not contact a live support team or schedule a callback. "
+            "No response time is available here."
+        )
+        return result

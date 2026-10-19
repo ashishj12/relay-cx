@@ -1,24 +1,35 @@
-# What changed
+# Summary of changes
 
-This version keeps the sample records and eight sample test situations. The
-app uses the sample services over HTTP instead of reading pre-written answers.
+The reviewed application keeps the received customer records, API contracts, failure controls and all eight mandatory scenarios. The resource comparison in `evidence/current/starter-provenance.json` confirms 35 resource files are unchanged from the received project. The original standalone starter ZIP was unavailable, so this is not a claim of byte-for-byte provenance against that ZIP.
 
-## Changes you may notice
+## Components retained and completed
 
-- The sample company checks a sign-in token before returning protected records.
-- The app checks that a record belongs to the signed-in customer.
-- A case is sent only after the customer confirms the exact proposal.
-- The app will not automatically repeat a case request if it cannot tell
-  whether the first request succeeded.
-- Long or incomplete requests are checked and reported clearly.
-- If part of a request succeeds before another part fails, the useful results
-  are kept for the support handoff.
-- Support staff can move between screens without losing the open conversation.
-- The health label describes whether the app is running; it does not promise
-  that every service is available.
+| Area | Work retained or completed |
+|---|---|
+| Customer experience | Next.js, TypeScript and Bun workspace; customer chat, support handoff, Operations and Evaluation views |
+| Gemini | Native Google ADK routing and specialist agents; controlled tools and a validated grounded-reply schema after enterprise retrieval |
+| Enterprise integration | Supplied synthetic identity, account, billing, diagnostics and case services accessed over HTTP |
+| Legacy integration | XML adapter, response normalization and independent legacy records used to detect conflicts |
+| Security | Server-bound customer scope, deterministic ownership and roles, session cookies, confirmation and durable duplicate-action controls |
+| Reliability | Bounded model/tool execution, limited safe retries, explicit strict-live failure handling and uncertain-write reconciliation |
+| Observability | Correlated structured events, workflow traces, tool timings, escalation context and metrics derived from execution |
+| Deployment | Non-root Docker services, health checks, SQLite persistence and documented GCP deployment configuration |
 
-## About the test results
+## Changes from this client review
 
-The saved test results describe this code and the fake services. They are not
-an independent quality score and do not prove that a real cloud deployment
-works.
+- Corrected explicit service changes and follow-up context across customer turns.
+- Made dependency failures and handoffs explain the next step clearly.
+- Corrected stale in-flight activity and failed workflow states in operational views.
+- Validated malformed private requests before ownership checks; consumed bounded POST bodies before early rejection.
+- Serialized logout state changes with workflow writes and rejected empty chat messages.
+- Rejected unsupported record references in generated replies, including references whose digits already appear in verified facts.
+- Added customer, private-endpoint, grounded-reply and frontend regressions.
+- Updated setup, environment, architecture, handover and Google CX mapping documentation; restored the attached canonical challenge statement and regenerated requirement evidence.
+
+## Remaining limits
+
+Fresh live Gemini success requires available quota; current provider failures are preserved in the evidence. Cloud configuration has been validated locally but not deployed. The API supports one process; Docker now persists hashed synthetic identities and case receipts in a separate enterprise volume. No independent qualification score is claimed. The demo video is excluded at the user's request. See `REMEDIATION.md` for the current repairs and `CLIENT_REVIEW.md` for the historical review.
+
+## Follow-up repairs
+
+See [REMEDIATION.md](REMEDIATION.md) for the safety, customer workflow, bounded concurrency, durable synthetic services and optional managed telemetry work after the independent review. Actual cloud deployment was deferred by the user; the source contains configuration placeholders rather than active credentials.

@@ -1,4 +1,6 @@
 import json
+import tempfile
+from pathlib import Path
 from relay_api.domain.models import Chat, Confirmation
 from relay_api.core.config import CHALLENGE_ROOT
 
@@ -6,6 +8,30 @@ ROOT = CHALLENGE_ROOT
 
 
 def run_scenario(app, scenario):
+    """Each mandatory scenario starts independently, like its initial conditions.
+
+    Execute the same workflow/gateway against HTTP services with isolated state;
+    import its real events into the reviewer workspace for investigation.
+    """
+    from relay_api.application.workflows import ResolutionService
+
+    with tempfile.TemporaryDirectory(prefix="relay-scenario-") as directory:
+        isolated = ResolutionService(str(Path(directory) / "scenario.sqlite"), app.gateway.base)
+        isolated.gateway.timeout = app.gateway.timeout
+        isolated.gateway.retries = app.gateway.retries
+        try:
+            result = _run_scenario(isolated, scenario)
+            for event in result["events"]:
+                if not app.store.ingest(event):
+                    raise ValueError("invalid_scenario_event")
+            for record in result["escalations"]:
+                app.store.escalate("reviewer-scenario", record)
+            return result
+        finally:
+            isolated.store.db.close()
+
+
+def _run_scenario(app, scenario):
     if scenario not in [f"SCN-{i:03}" for i in range(1, 9)]:
         raise ValueError("unknown_scenario")
     spec = json.loads((ROOT / "scenarios" / f"{scenario}.json").read_text())

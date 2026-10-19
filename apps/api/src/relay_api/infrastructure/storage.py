@@ -5,7 +5,7 @@ import sqlite3
 import threading
 import time
 import uuid
-from contextlib import closing
+from contextlib import closing, contextmanager
 from datetime import datetime, timezone
 from pathlib import Path
 from jsonschema import Draft202012Validator, FormatChecker
@@ -21,11 +21,21 @@ def digest(token):
     return hashlib.sha256(token.encode()).hexdigest()
 
 
+class WorkflowBusy(Exception):
+    """Admission is bounded independently of model and network deadlines."""
+
+    def __init__(self, duration=0):
+        self.duration = duration
+
+
 class Store:
     def __init__(self, path):
         self.path = str(path)
         Path(path).parent.mkdir(parents=True, exist_ok=True)
         self.lock = threading.RLock()
+        self._workflows = {}
+        self._admission = threading.BoundedSemaphore(8)
+        self._local = threading.local()
         self.db = sqlite3.connect(path, check_same_thread=False)
         self.db.execute("PRAGMA journal_mode=WAL")
         self.db.executescript("""
@@ -35,17 +45,105 @@ class Store:
         CREATE TABLE IF NOT EXISTS telemetry_rejections (timestamp TEXT, reason TEXT);
         CREATE INDEX IF NOT EXISTS events_trace ON events(json_extract(body, '$.traceId'));
         CREATE INDEX IF NOT EXISTS events_session ON events(json_extract(body, '$.sessionId'));
+        CREATE TABLE IF NOT EXISTS actions (
+            id TEXT PRIMARY KEY, customer TEXT, account TEXT, status TEXT, body TEXT
+        );
+        CREATE INDEX IF NOT EXISTS actions_account ON actions(customer, account, status);
+        CREATE TABLE IF NOT EXISTS conversations (subject TEXT PRIMARY KEY, body TEXT);
         """)
+        # Backfill old session-local markers before allowing a fresh login.
+        with self.db:
+            for (body,) in self.db.execute("SELECT data FROM sessions").fetchall():
+                s = json.loads(body)
+                if s.get("pending"):
+                    self._save_action(s)
         schema = CHALLENGE_ROOT / "schemas/telemetry-event.schema.json"
         self.validator = Draft202012Validator(json.loads(schema.read_text()), format_checker=FormatChecker())
         self.log_path = Path(os.getenv("STRUCTURED_LOG_PATH", str(Path(path).parent / "events.jsonl")))
         self.log_path.parent.mkdir(parents=True, exist_ok=True)
 
+    @contextmanager
+    def workflow(self, session, wait=2.0):
+        if getattr(self._local, "inside", False):
+            yield
+            return
+        key = (session.get("customerId"), session.get("accountId"))
+        started = time.monotonic()
+        with self.lock:
+            lock = self._workflows.setdefault(key, threading.RLock())
+        if not self._admission.acquire(timeout=wait):
+            raise WorkflowBusy((time.monotonic() - started) * 1000)
+        acquired = False
+        try:
+            acquired = lock.acquire(timeout=wait)
+            if not acquired:
+                raise WorkflowBusy((time.monotonic() - started) * 1000)
+            self._local.inside = True
+            yield
+        finally:
+            self._local.inside = False
+            if acquired:
+                lock.release()
+            self._admission.release()
+
+    def _save_action(self, s):
+        action = s["pending"]
+        row = self.db.execute("SELECT status,body FROM actions WHERE id=?", (action["id"],)).fetchone()
+        allowed = {
+            "pending": {"pending", "executing", "cancelled", "expired"},
+            "executing": {"executing", "completed", "uncertain"},
+            "uncertain": {"uncertain", "completed"},
+        }
+        if row and action["status"] not in allowed.get(row[0], {row[0]}):
+            s["pending"] = json.loads(row[1])
+            return
+        self.db.execute(
+            "INSERT OR REPLACE INTO actions VALUES (?,?,?,?,?)",
+            (action["id"], s["customerId"], s.get("accountId"), action["status"], json.dumps(action)),
+        )
+
+    def outstanding_action(self, s):
+        with self.lock:
+            row = self.db.execute(
+                "SELECT body FROM actions WHERE customer=? AND account=? "
+                "AND status IN ('pending','executing','uncertain') "
+                "ORDER BY CASE status WHEN 'uncertain' THEN 0 WHEN 'executing' THEN 1 ELSE 2 END, rowid DESC LIMIT 1",
+                (s["customerId"], s.get("accountId")),
+            ).fetchone()
+        return json.loads(row[0]) if row else None
+
+    def action(self, s, action_id):
+        with self.lock:
+            row = self.db.execute(
+                "SELECT body FROM actions WHERE id=? AND customer=? AND account=?",
+                (action_id, s["customerId"], s.get("accountId")),
+            ).fetchone()
+        return json.loads(row[0]) if row else None
+
+    def account_context(self, s):
+        with self.lock:
+            row = self.db.execute(
+                "SELECT body FROM conversations WHERE subject=?",
+                (s["customerId"] + ":" + str(s.get("accountId")),),
+            ).fetchone()
+        return json.loads(row[0]) if row else {}
+
     def save(self, s):
         with self.lock, self.db:
+            if s.get("pending"):
+                self._save_action(s)
             self.db.execute(
                 "INSERT OR REPLACE INTO sessions VALUES (?,?,?)", (s["id"], s["expires"], json.dumps(s))
             )
+            if s.get("history"):
+                context = {
+                    key: list(s.get(key) or [])
+                    for key in ("history", "messages", "verifiedEvidence", "completedSteps")
+                }
+                self.db.execute(
+                    "INSERT OR REPLACE INTO conversations VALUES (?,?)",
+                    (s["customerId"] + ":" + str(s.get("accountId")), json.dumps(context)),
+                )
 
     def session(self, token):
         return self.session_by_id(digest(token))
@@ -115,8 +213,13 @@ class Store:
         query = "SELECT body FROM events WHERE json_extract(body, '$.traceId')=?"
         params = [trace_id]
         if session_id is not None:
-            query += " AND json_extract(body, '$.sessionId')=?"
-            params.append(session_id)
+            query += (
+                " AND json_extract(body, '$.sessionId') IN ("
+                "SELECT id FROM sessions WHERE id=? OR ("
+                "json_extract(data,'$.customerId')=(SELECT json_extract(data,'$.customerId') FROM sessions WHERE id=?) "
+                "AND json_extract(data,'$.accountId')=(SELECT json_extract(data,'$.accountId') FROM sessions WHERE id=?)))"
+            )
+            params.extend([session_id, session_id, session_id])
         with closing(sqlite3.connect(self.path)) as reader:
             return [json.loads(row[0]) for row in reader.execute(query + " ORDER BY seq", params)]
 

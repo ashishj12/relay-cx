@@ -32,7 +32,7 @@ If you are not using Docker, see the install and test commands in the
 
 1. Ask: “What internet plan am I currently using?” Check the answer against the
    sample account.
-2. Ask: “My service is not working.” Answer the app's question with “home
+2. Sign out and sign in again to start without service context. Ask: “My service is not working.” Answer the app's question with “home
    internet.” The app should ask before reading protected service records.
 3. Ask: “My home internet is slow.” Review the network and service checks. If
    sample results disagree, the app should ask a person to help.

@@ -1,40 +1,9 @@
-# What has been checked
+> Historical assessment of the pre-remediation build. See [current repairs and evidence](REMEDIATION.md).
 
-This project has been tested as a local demo using fake customer records. The
-saved results are in
-[`evidence/current/verification-summary.json`](../evidence/current/verification-summary.json).
+# Review status
 
-## Checks recorded
+The current assessment is [CLIENT_REVIEW.md](CLIENT_REVIEW.md). Its machine-readable results and source-referenced requirement matrix are generated from this review's tests. Prior successful live results do not substitute for a current provider check.
 
-- Backend tests passed.
-- The eight sample customer situations passed in reviewer mode.
-- The Docker setup and a fresh install passed.
-- One recorded live Gemini evaluation passed.
+Read [FINAL_COMPLIANCE_AUDIT.md](FINAL_COMPLIANCE_AUDIT.md), [REQUIREMENT_EVIDENCE_MATRIX.md](REQUIREMENT_EVIDENCE_MATRIX.md), and `evidence/current/verification-summary.json` together. They distinguish local checks, live provider availability, clean setup, Docker behavior and deployment preparation.
 
-These checks help show how the demo behaved at the time of testing. They are
-not an independent qualification score and do not prove readiness for real
-customers.
-
-## Improvements in this version
-
-- The fake company services check login tokens and customer ownership.
-- Customer passwords and service credentials are kept out of browser
-  responses and activity records.
-- Support staff can inspect other screens without losing an open conversation.
-- Requests and agent stages have limits.
-- The app checks service responses and keeps useful results when it must hand
-  a request to a person.
-- Uncertain support-case requests are not automatically repeated.
-
-## Before a real launch
-
-This project has not been deployed to Google Cloud. It uses fake identity,
-sample services, one backend process, and a local SQLite database. Real use
-would require company sign-in, protected connections to real services, secure
-data retention and backups, shared storage for multiple servers, operational
-monitoring, and an independent security review.
-
-The combined challenge source document referenced by older evidence notes is
-missing from this working copy. The related sample materials are in
-[`resources/challenge/`](../resources/challenge/). The demo video is not
-included.
+This is a synthetic-data, single-process proof of concept. The Google Cloud reference has not been deployed, the video is excluded, and no external score is claimed. The canonical supplied statement is now included at `docs/challenge/ORIGINAL_CHALLENGE.md`.

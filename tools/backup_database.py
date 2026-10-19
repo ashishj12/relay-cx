@@ -3,6 +3,7 @@ import os
 from pathlib import Path
 import sqlite3
 
+
 def backup(database: Path, output: Path) -> None:
     source = database.resolve(strict=True)
     output = output.resolve()

@@ -19,6 +19,7 @@ def stack(tmp_path, monkeypatch):
     monkeypatch.setenv("DATABASE_PATH", str(tmp_path / "app.sqlite"))
     monkeypatch.setenv("STRUCTURED_LOG_PATH", str(tmp_path / "events.jsonl"))
     monkeypatch.delenv("PUBLIC_ORIGIN", raising=False)
+    monkeypatch.delenv("MOCK_DATABASE_PATH", raising=False)
     for name in ("AUTH", "BILLING", "LEGACY", "CASE"):
         monkeypatch.delenv("MOCK_" + name + "_MODE", raising=False)
     spec = importlib.util.spec_from_file_location(

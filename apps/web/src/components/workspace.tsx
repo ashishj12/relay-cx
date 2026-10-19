@@ -85,10 +85,12 @@ export function Workspace() {
         </nav>
         <div className="sidebar-runtime">
           <GitBranch size={18} />
-          <strong>Controlled agent workflow</strong>
-          <p>Inspect the model, tools and decisions behind each request.</p>
+          <strong>Checked against your account</strong>
+          <p>
+            See where answers come from and how your information is protected.
+          </p>
           <button onClick={() => navigate("agents")}>
-            Explore agents <ArrowUpRight size={14} />
+            How answers are checked <ArrowUpRight size={14} />
           </button>
         </div>
         <div className="sidebar-bottom">
@@ -143,8 +145,8 @@ export function Workspace() {
           )}
           {session.mode === "DEGRADED" && (
             <div className="notice degraded-notice">
-              Gemini is unavailable for part of this request. The result uses
-              deterministic workflow controls and verified enterprise records.
+              AI assistance is unavailable for this request. See the response
+              below for the next step.
             </div>
           )}
           {/* Keep an in-flight conversation mounted while inspecting other views. */}

@@ -35,7 +35,7 @@ def test_live_failure_never_calls_deterministic_reviewer(stack, customer):
         result = app.chat(customer, Chat(message="What is my plan?"))
     assert result["state"] == "ESCALATED"
     assert result["mode"] == "DEGRADED"
-    assert "No fallback answer was used" in result["answer"]
+    assert "I haven't changed your account" in result["answer"]
     assert "999.00" not in result["answer"]
     events = app.store.trace_events(result["traceId"])
     assert not any(e["eventType"] == "provider.fallback" for e in events)
@@ -49,8 +49,10 @@ def test_customer_sees_model_reply_instead_of_joined_facts(stack):
     session = app.login({"username": "jordan.lee", "password": "ReviewerPass-1002"})[1]
     app.mode = "LIVE_AI"
     expected = (
-        "I understand your mobile data is not working. The network and subscriber records look normal, "
-        "and diagnostics found no device fault. These checks do not explain your reported connection problem."
+        "I checked the information available for your account.\n\n"
+        "Network status: normal; incident none.\n\n"
+        "Diagnostics: no_device_fault_detected.\n\n"
+        "Subscriber record: subscriber active; network normal; observed 2026-10-13T08:30:00Z."
     )
     app.ai = AdkProvider(
         model=ScriptedModel(
@@ -67,3 +69,15 @@ def test_customer_sees_model_reply_instead_of_joined_facts(stack):
     assert result["answer"] == expected
     assert len(result["facts"]) == 3
     assert not app.ai._model.replies
+
+
+@pytest.mark.parametrize("reply", ["Your case CASE-FAAA is open.", "Your account is ACC-500."])
+def test_live_reply_rejects_unverified_references_even_when_numbers_match(reply):
+    with pytest.raises(ValueError, match="unsupported_reference_claim"):
+        AdkProvider.validate_reply(reply, ["Your plan is Fiber 500. Network status is normal."])
+
+
+def test_live_reply_allows_reference_returned_by_actual_evidence():
+    AdkProvider.validate_reply(
+        "Network incident INC-9001 is degraded.", ["Network incident INC-9001 is degraded."]
+    )

@@ -8,7 +8,7 @@ RUN pip install --no-cache-dir -r /tmp/requirements.lock && useradd --uid 10001 
 COPY apps/api/src apps/api/src
 COPY services/mock-telecom/src services/mock-telecom/src
 COPY resources/challenge resources/challenge
-RUN mkdir -p /app/data && chown relay:relay /app/data
+RUN mkdir -p /app/data && chown relay:relay /app/data && chmod 0700 /app/data
 
 USER relay
 

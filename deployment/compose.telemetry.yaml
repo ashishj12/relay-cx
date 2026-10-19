@@ -1,0 +1,22 @@
+# Explicit opt-in. Requires VM ADC with logging.logWriter and cloudtrace.agent.
+# shares the existing API event journal; credentials are never built into images.
+services:
+  telemetry:
+    image: ${RELAY_API_IMAGE:?Set the API image digest}
+    command: [python, -m, relay_api.infrastructure.cloud_export]
+    environment:
+      GOOGLE_CLOUD_PROJECT: ${GOOGLE_CLOUD_PROJECT:?Set the GCP project ID}
+      DATABASE_PATH: /app/data/relay.sqlite
+    volumes:
+      - type: bind
+        source: /srv/relay/data
+        target: /app/data
+    networks: [egress]
+    depends_on:
+      api:
+        condition: service_healthy
+    restart: "no"
+    init: true
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    pids_limit: 128

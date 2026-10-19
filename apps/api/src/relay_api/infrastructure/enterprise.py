@@ -1,6 +1,7 @@
 from datetime import datetime
 import json
 import os
+import re
 import time
 import urllib.error
 import urllib.parse
@@ -91,6 +92,33 @@ class Gateway:
                     result = schema.model_validate(result)
                 if normalize:
                     result = normalize(result)
+                record = result.model_dump() if hasattr(result, "model_dump") else result
+                allowed = {
+                    "customerId",
+                    "accountId",
+                    "roles",
+                    "status",
+                    "plan",
+                    "services",
+                    "period",
+                    "total",
+                    "items",
+                    "incidentId",
+                    "estimatedRestoration",
+                    "diagnosticId",
+                    "serviceId",
+                    "result",
+                    "subscriberStatus",
+                    "networkStatus",
+                    "observedAt",
+                    "caseId",
+                    "idempotencyKey",
+                }
+                summary = (
+                    {key: value for key, value in record.items() if key in allowed}
+                    if isinstance(record, dict)
+                    else {}
+                )
                 self.store.emit(
                     "tool.finished",
                     trace,
@@ -101,6 +129,7 @@ class Gateway:
                         "validated": True,
                         "recordType": name,
                         "identityChecked": name not in ("authentication", "health"),
+                        "record": summary,
                     },
                 )
                 return result
@@ -223,6 +252,29 @@ class Gateway:
             xml=True,
             safe=True,
             normalize=lambda raw: parse_legacy(raw, s["accountId"], service),
+        )
+
+    def case_receipt(self, s, t, action):
+        self.reading(s, t)
+        if not re.fullmatch(r"ACT-[a-f0-9]{32}", action.get("id", "")):
+            raise Denied("Invalid stored operation.")
+
+        def verify(case):
+            if (
+                case.accountId != s["accountId"]
+                or case.customerId != s["customerId"]
+                or case.idempotencyKey != action["id"]
+            ):
+                raise IntegrationError("case-management", "identity_mismatch")
+            return case
+
+        return self.request(
+            "case-management",
+            "/api/support-cases/by-key/" + action["id"],
+            t,
+            s,
+            schema=Case,
+            normalize=verify,
         )
 
     def create_case(self, s, t, action):

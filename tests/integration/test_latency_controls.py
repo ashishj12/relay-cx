@@ -25,7 +25,12 @@ def test_single_account_fact_still_requires_actual_authorized_tool(stack, custom
         replies=[
             answer({"intent": "account", "service": "unknown", "confidence": 1.0}),
             tool("read_account"),
-            answer({"fact_ids": [0], "answer": "Your active account uses Fiber 500 at 79.99 per month."}),
+            answer(
+                {
+                    "fact_ids": [0],
+                    "answer": "Your plan is Fiber 500; monthly plan price 79.99; account status active.",
+                }
+            ),
         ],
     )
     service.ai = AdkProvider(model=model)

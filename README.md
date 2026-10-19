@@ -1,11 +1,8 @@
 # Relay CX
 
-Relay CX is a demo support website for a made-up phone and internet company.
-You can sign in, ask about a sample account or service, and review what the
-app found.
+Relay CX is a telecom customer-support workspace for account questions, billing checks, service diagnostics, and confirmed support cases. Google ADK agents use Gemini to understand requests and write replies from authorized enterprise results. Deterministic backend code controls identity, ownership and every consequential action.
 
-The project uses fake customer records and fake company services. It is for
-learning, testing, and review—not for real customer information.
+This is the challenge's productionized proof of concept. All customer data and enterprise systems are synthetic. It can be reviewed locally without a paid AI account; live mode uses the configured Gemini service.
 
 ## What the app does
 
@@ -66,22 +63,19 @@ Use one of these sample accounts:
 
 | User | Username | Password |
 |---|---|---|
-| Alex Morgan | `alex.morgan` | `ReviewerPass-1001` |
-| Jordan Lee | `jordan.lee` | `ReviewerPass-1002` |
+| Alex Morgan — home internet | `alex.morgan` | `ReviewerPass-1001` |
+| Jordan Lee — mobile | `jordan.lee` | `ReviewerPass-1002` |
 | Support staff | `support.agent` | `ReviewerPass-3001` |
-| Admin | `admin` | `admin@123` |
+| Staff alias (same support role) | `admin` | `admin@123` |
 
 These accounts and passwords are fake and are only for this demo. Never use
 them for a real service.
 
 ## Choose a mode
 
-- **Reviewer mode** is the default. It uses predictable sample answers and
-  does not need a Gemini key.
-- **Live AI mode** sends requests to Gemini. It needs a valid `GEMINI_API_KEY`
-  and a `GEMINI_MODEL` available to your account.
-- **Degraded mode** means the app could not complete the Gemini step. The app
-  reports the problem rather than pretending it succeeded.
+- **Reviewer mode** is the default. Only AI interpretation and fact ordering are deterministic. It still calls the real local HTTP services, enforces ownership and confirmation, validates XML, and records actual events. No Gemini key is needed.
+- **Live AI mode** uses real Gemini through ADK for routing, tool use and the customer-facing reply. Set `APP_MODE=LIVE_AI`, `GEMINI_API_KEY` and an available `GEMINI_MODEL` in ignored `.env`, then recreate the API container. Provider failures stop the answer and save the request for review; they never substitute a reviewer answer.
+- **Degraded status** appears when a live model stage fails. The response explains the failure. An explicitly configured `APP_MODE=DEGRADED` instead selects the documented deterministic offline path. Neither counts as successful live inference.
 
 Keep `.env` on your computer. Do not commit it or share a real API key.
 
@@ -117,3 +111,41 @@ It is designed to run with one backend process. The Google Cloud setup is a
 reference only; it has not been deployed. Before using real customer data, the
 project needs real company sign-in, protected connections, secure data
 handling, monitoring, and more testing.
+
+
+## Environment settings
+
+Copy `.env.example` to `.env`. Keep the key on the API server; the browser never receives it. Existing process environment variables take precedence over `.env`.
+
+| Setting | Purpose / default |
+|---|---|
+| `APP_MODE` | `REVIEWER`, `LIVE_AI`, or explicitly configured `DEGRADED` |
+| `GEMINI_MODEL`, `GEMINI_API_KEY` | Model identifier and server-only key; live mode requires both and available quota |
+| `AI_TIMEOUT` | Seconds per ADK stage, capped at 40; `15` is a shorter local option, not a whole-request deadline |
+| `REQUEST_TIMEOUT`, `MAX_RETRIES` | Enterprise timeout (2 seconds) and safe-read retries (1; capped at 2) |
+| `PUBLIC_ORIGIN` | Exact browser origin; local default `http://127.0.0.1:3000`; localhost aliases are supported |
+| `COOKIE_SECURE` | `false` for local HTTP; `true` for HTTPS |
+| `APP_HOST`, `APP_PORT` | Local API bind address and port, `127.0.0.1:8080` |
+| `MOCK_HOST`, `MOCK_PORT` | Synthetic service bind address and port, `127.0.0.1:8090` |
+| `ENTERPRISE_API_BASE_URL` | Local service URL; Compose sets the private service address |
+| `DATABASE_PATH`, `STRUCTURED_LOG_PATH` | Local SQLite and JSON-lines log paths; Compose stores API state in its volume |
+| `MOCK_ALLOW_FAILURES` | Enables reviewer failure injection; the live gateway never sends reviewer overrides |
+| `MOCK_AUTH_MODE`, `MOCK_BILLING_MODE`, `MOCK_LEGACY_MODE`, `MOCK_CASE_MODE` | Optional dependency failure controls for isolated testing; see the supplied failure configuration |
+| `GOOGLE_CLOUD_PROJECT` | Optional deployment identifier; it does not deploy resources or switch the model client to Vertex AI |
+| `RELAY_API_IMAGE`, `RELAY_WEB_IMAGE` | Immutable image references used by the Google Cloud Compose overlay |
+
+`APP_MODE=LIVE_AI` and `GEMINI_MODEL=gemini-3.6-flash` are examples, not a guarantee of access. A 429 response means the provider rejected that request for quota/rate limits. Authentication failures and 429 responses are not retried in the same turn. Other selected transient provider errors have bounded retries within the stage deadline.
+
+## Reviewing a release
+
+Run `python tools/evaluate.py --mode REVIEWER` for all eight mandatory scenarios. To collect genuine Gemini evidence, run `python tools/evaluate.py --mode LIVE_AI --output evidence/current/live-gemini-evidence.json`. For low request quotas, `LIVE_EVALUATION_PAUSE=60` paces evaluation turns; this does not affect normal app response times or turn a failed result into a pass.
+
+The source, scenario checks, evidence and limitations are linked in [the requirement matrix](docs/REQUIREMENT_EVIDENCE_MATRIX.md) and [client review](docs/CLIENT_REVIEW.md). [The handover guide](docs/HANDOVER.md) explains extension and diagnosis. [Deployment instructions](deployment/README.md) cover the single-VM reference, health checks, backups, TLS, secrets, cost and rollback. A cloud deployment has not been performed. The demo video remains excluded from this work.
+
+## Customer and safety repairs
+
+Human-review requests work independently of Gemini and return a saved reference. The demo does not assign live staff or promise callbacks. Sign-in can expire, but a fresh sign-in restores your conversation and unfinished case. Cases and duplicate protection are backed by durable account-level records; an uncertain write is checked against the existing enterprise receipt before any further action.
+
+Live factual replies are intentionally extractive: Gemini chooses from verified account statements rather than freely inventing prose. Strict-live failures never substitute Reviewer responses. Account and bill questions can include both the current plan and the actual available billing period. Plan changes, roaming additions and travel bookings are explicitly unsupported.
+
+See [the repair report](docs/REMEDIATION.md), [the original customer walkthrough](docs/RAHUL_CUSTOMER_REVIEW.md), [the customer retest](docs/CUSTOMER_RETEST.md) and [optional cloud setup](deployment/README.md). Cloud settings can stay blank until you have credits; they do not affect local Reviewer startup.

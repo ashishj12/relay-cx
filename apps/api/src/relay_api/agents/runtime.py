@@ -16,6 +16,7 @@ from google.adk.runners import Runner
 from google.adk.sessions import InMemorySessionService
 
 from relay_api.ai.providers import redact
+from relay_api.ai.grounding import INTRODUCTIONS, statements, validate_statements
 from relay_api.application.evidence import EvidenceBundle
 from relay_api.domain.models import GroundedReply, Interpretation
 from relay_api.infrastructure.enterprise import IntegrationError
@@ -114,6 +115,7 @@ class AdkProvider:
             model=self.model(),
             instruction=SAFETY
             + " Classify the latest telecom request in context. Use unknown when unsupported. "
+            "If the customer asks for both plan and bill information, choose billing; it retrieves both. "
             "The service is unknown unless home internet or mobile is explicitly stated. Return JSON only.",
             generate_content_config=self.generation_config(
                 response_mime_type="application/json",
@@ -144,7 +146,11 @@ class AdkProvider:
             try:
                 if bundle is None:
                     bundle = collect()
-                return {"verified_facts": dict(enumerate(bundle.facts))}
+                return {
+                    "verified_facts": dict(enumerate(bundle.facts)),
+                    "reply_paragraphs": statements(bundle.facts),
+                    "allowed_introductions": INTRODUCTIONS,
+                }
             except IntegrationError as error:
                 integration_error = error
                 return {"error": "enterprise_unavailable"}
@@ -154,7 +160,12 @@ class AdkProvider:
                 # Tool selection remains a real model call. Once the verified read
                 # completes, ask only for the final structured reply, not more tools.
                 llm_request.config.response_mime_type = "application/json"
-                llm_request.config.response_json_schema = GroundedReply.model_json_schema()
+                schema = GroundedReply.model_json_schema()
+                body = "\n\n".join(statements(bundle.facts))
+                schema["properties"]["answer"]["enum"] = [body] + [
+                    intro + "\n\n" + body for intro in INTRODUCTIONS
+                ]
+                llm_request.config.response_json_schema = schema
                 llm_request.config.tools = []
                 llm_request.config.tool_config = None
 
@@ -165,7 +176,9 @@ class AdkProvider:
             tools=[read_verified_records],
             instruction=SAFETY + f" Call {tool_name} to obtain the authorized evidence. "
             'After the tool returns, respond with JSON only: {"fact_ids": [0, 1], "answer": "..."}. '
-            "Write the answer for the customer's question in natural, concise language using only verified facts. "
+            "The answer must contain every reply_paragraph exactly once, unchanged, separated by two newlines. "
+            "You may start with one allowed_introduction followed by two newlines. "
+            "Do not paraphrase, combine clauses, add advice, change values or add any other prose. "
             "Acknowledge their symptom. Explain what was checked and what remains unknown. "
             "A normal network report does not establish that the customer's device or connection works. "
             "Do not invent troubleshooting results, dates, numbers, contact details, or restoration estimates. "
@@ -206,6 +219,8 @@ class AdkProvider:
                 "unsupported_numeric_claim",
                 "unsafe_customer_reply",
                 "unsupported_action_claim",
+                "unsupported_reference_claim",
+                "unsupported_semantic_claim",
             }
             reason = str(error) if str(error) in allowed else "invalid_reply"
             self.emit("agent.output_rejected", component=agent_name, status="failure", reason=reason)
@@ -220,6 +235,10 @@ class AdkProvider:
         def numbers(text):
             return set(re.findall(r"\d+(?:\.\d+)?", text))
 
+        source = " ".join(facts)
+        references = re.findall(r"\b(?:ACC|CUST|SVC|CASE|ESC|ACT|INC|DIAG|PLAN)-[A-Za-z0-9-]+\b", answer)
+        if any(reference not in source for reference in references):
+            raise ValueError("unsupported_reference_claim")
         if numbers(answer) - numbers(" ".join(facts)):
             raise ValueError("unsupported_numeric_claim")
         if redact(answer) != answer or re.search(r"https?://|www\.", answer, re.I):
@@ -230,3 +249,4 @@ class AdkProvider:
             re.I,
         ):
             raise ValueError("unsupported_action_claim")
+        validate_statements(answer, facts)

@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { api } from "@/lib/api";
+import { currentActivity } from "@/lib/activity";
 import type { TelemetryEvent } from "@/lib/types";
 
 export function useActivity(busy: boolean, traceId: string | null) {
@@ -22,7 +23,5 @@ export function useActivity(busy: boolean, traceId: string | null) {
       if (interval) window.clearInterval(interval);
     };
   }, [busy, traceId]);
-  return traceId && !busy
-    ? events.filter((event) => event.traceId === traceId)
-    : events;
+  return currentActivity(events, busy, traceId);
 }

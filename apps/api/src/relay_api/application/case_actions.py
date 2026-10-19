@@ -14,7 +14,7 @@ class CaseActions:
         self.workflow = workflow
 
     def confirm(self, session: dict, data: Confirmation) -> dict:
-        with self.workflow.store.lock:
+        with self.workflow.store.workflow(session):
             trace_id = uid("TRACE")
             start = time.monotonic()
             self.workflow.store.emit("request.received", trace_id, session["id"])
@@ -29,6 +29,9 @@ class CaseActions:
                     session, trace_id, start, {"answer": "Account access denied."}, True
                 )
             action = session.get("pending")
+            outstanding = self.workflow.store.action(session, data.actionId)
+            if outstanding and outstanding.get("id") == data.actionId:
+                action = session["pending"] = outstanding
             durable = self.workflow.store.session_by_id(session["id"])
             durable_action = (durable or {}).get("pending") or {}
             if durable_action.get("id") == data.actionId and durable_action.get("status") != "pending":

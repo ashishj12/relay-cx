@@ -160,6 +160,7 @@ def test_expiry_on_http_and_pending_action(stack, customer):
         assert c.post("/api/chat", json={"message": "my plan"}).status_code == 401
     app.chat(customer, Chat(message="Create a support case"))
     customer["pending"]["created"] = time.time() - 601
+    app.store.save(customer)  # Age the authoritative marker, not only this detached session snapshot.
     r = app.confirm(customer, Confirmation(actionId=customer["pending"]["id"], confirm=True))
     assert r["state"] == "FAILED" and not mock.CASES
 

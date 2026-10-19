@@ -98,8 +98,9 @@ export function Conversation({
     ]);
     setTraceId(result.traceId);
     onMode(result.mode);
-    if (result.pendingAction?.status === "pending")
-      setPending(result.pendingAction);
+    setPending(
+      result.pendingAction?.status === "pending" ? result.pendingAction : null,
+    );
   }
   async function send(request: string) {
     if (!request.trim() || busy) return;
@@ -137,6 +138,23 @@ export function Conversation({
       setBusy(false);
     }
   }
+  async function requestHumanSupport() {
+    if (busy) return;
+    setBusy(true);
+    setError("");
+    setMessages((messages) => [
+      ...messages,
+      { role: "user", text: "Request human support" },
+    ]);
+    try {
+      accept(await api<ChatResult>("handoff", {}));
+    } catch (error) {
+      setError((error as Error).message);
+    } finally {
+      setBusy(false);
+      input.current?.focus();
+    }
+  }
   if (!isCustomer)
     return (
       <div className="role-message">
@@ -158,8 +176,9 @@ export function Conversation({
           How can we help{overview ? `, ${overview.name.split(" ")[0]}` : ""}?
         </h1>
         <p>
-          Ask about your plan, bill or connection. This challenge workspace uses
-          sample account and network records; live mode uses Gemini to answer.
+          Ask about your plan, bill or connection. You can also review and
+          approve a support case. Plan changes and new services aren't available
+          here.
         </p>
       </div>
       <div className="account-ribbon">
@@ -273,7 +292,7 @@ export function Conversation({
                 <span />
                 <span>
                   {session.mode === "LIVE_AI"
-                    ? "Waiting for Gemini and verified service results…"
+                    ? "Checking your account and preparing a reply…"
                     : "Checking the next step…"}
                 </span>
               </div>
@@ -283,6 +302,10 @@ export function Conversation({
                 <span className="overline">APPROVAL REQUIRED</span>
                 <h3>Create this support case?</h3>
                 <p>{pending.summary}</p>
+                <p>
+                  This opens a support case. It does not change your plan or add
+                  a paid service. No response time is available here.
+                </p>
                 <div className="confirmation-account">
                   <ShieldCheck size={14} />
                   {pending.accountId} · One support case
@@ -356,32 +379,31 @@ export function Conversation({
           <div className="conversation-footer">
             <ShieldCheck size={13} />
             <span>
-              Account access is checked before tools run. Actions need your
-              approval.
+              Only your account can be checked. Please don’t send passwords or
+              card details.
             </span>
           </div>
         </section>
         <div className="support-aside">
-          <ActivityPanel
-            events={events}
-            busy={busy}
-            traceId={traceId}
-            onTrace={onTrace}
-          />
+          <details>
+            <summary>How your information is checked</summary>
+            <ActivityPanel
+              events={events}
+              busy={busy}
+              traceId={traceId}
+              onTrace={onTrace}
+            />
+          </details>
           <div className="human-support">
             <Headphones size={19} />
             <h3>Need a person?</h3>
             <p>
-              We’ll pass along the context, so you don’t have to repeat
-              yourself.
+              Save your conversation for review, even when the assistant is
+              unavailable. This demo doesn't contact a live support team.
             </p>
             <button
               className="text-link"
-              onClick={() =>
-                send(
-                  "Please escalate this conversation to a human support representative.",
-                )
-              }
+              onClick={requestHumanSupport}
               disabled={busy}
             >
               Request human support <ArrowRight size={15} />

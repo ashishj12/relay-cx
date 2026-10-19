@@ -48,6 +48,7 @@ def evaluate(mode="REVIEWER", output=None):
             ENTERPRISE_API_BASE_URL=f"http://127.0.0.1:{enterprise_port}",
             PUBLIC_ORIGIN=f"http://127.0.0.1:{app_port}",
             DATABASE_PATH=str(Path(temp) / "cx.sqlite"),
+            MOCK_DATABASE_PATH=str(Path(temp) / "enterprise.sqlite"),
             STRUCTURED_LOG_PATH=str(Path(temp) / "events.jsonl"),
             MOCK_ALLOW_FAILURES="true" if mode == "REVIEWER" else "false",
             MOCK_AUTH_MODE="normal",
@@ -100,21 +101,36 @@ def evaluate(mode="REVIEWER", output=None):
                     client.post(
                         "/api/login", json={"username": "alex.morgan", "password": "ReviewerPass-1001"}
                     ).raise_for_status()
-                    for message in (
-                        "What internet plan am I currently using?",
-                        "My service is not working.",
-                        "home internet",
-                        "Create a support case for my internet issue.",
+                    for index, message in enumerate(
+                        (
+                            "What internet plan am I currently using?",
+                            "My service is not working.",
+                            "mobile",
+                            "Create a support case for my mobile issue.",
+                        )
                     ):
+                        if index == 1:
+                            # A fresh login intentionally restores account context now.
+                            # Use the other fresh account to test genuine ambiguity.
+                            client.post("/api/logout", json={}).raise_for_status()
+                            client.post(
+                                "/api/login",
+                                json={"username": "jordan.lee", "password": "ReviewerPass-1002"},
+                            ).raise_for_status()
                         # Free-tier projects may permit only a few model requests per minute.
                         # Pacing is opt-in and never masks a failed provider response.
-                        time.sleep(float(os.getenv("LIVE_EVALUATION_PAUSE", "0")))
+                        if index:
+                            time.sleep(float(os.getenv("LIVE_EVALUATION_PAUSE", "0")))
                         response = client.post("/api/chat", json={"message": message})
                         response.raise_for_status()
                         record = response.json()
                         record["input"] = message
                         record["events"] = client.get("/api/traces/" + record["traceId"]).json()
                         records.append(record)
+                        if record.get("mode") != "LIVE_AI":
+                            # A failed provider turn is not a useful basis for
+                            # continuing later scenarios or consuming more quota.
+                            break
                     if records[-1].get("pendingAction"):
                         response = client.post(
                             "/api/confirm",

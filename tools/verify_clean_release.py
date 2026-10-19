@@ -1,5 +1,6 @@
 import hashlib
 import json
+import re
 import os
 from pathlib import Path
 import shutil
@@ -36,6 +37,7 @@ def verify():
         env.pop(key, None)
     env["APP_MODE"] = "REVIEWER"
     env["NEXT_TELEMETRY_DISABLED"] = "1"
+    env["NO_COLOR"] = "1"
     commands = []
 
     def run(args):
@@ -88,6 +90,25 @@ def verify():
         )
     )
     if status == "PASS":
+        shutil.copyfile(source / "evidence/current/pytest.xml", ROOT / "evidence/current/pytest.xml")
+        web_test = next(c for c in commands if "test:web" in c["command"])["output"]
+        tests = re.search(r"(\d+) pass\b", web_test)
+        assertions = re.search(r"(\d+) expect\(\) calls", web_test)
+        (ROOT / "evidence/current/frontend-verification.json").write_text(
+            json.dumps(
+                {
+                    "status": "PASS",
+                    "tests": int(tests[1]) if tests else None,
+                    "assertions": int(assertions[1]) if assertions else None,
+                    "typecheck": "PASS",
+                    "productionBuild": "PASS",
+                    "executionSource": "isolated clean release",
+                    "commands": ["bun run test:web", "bun run typecheck", "bun run build"],
+                },
+                indent=2,
+            ),
+            encoding="utf-8",
+        )
         shutil.copyfile(
             source / "evidence/current/http-scenarios.json",
             ROOT / "evidence/current/clean-http-scenarios.json",

@@ -1,31 +1,35 @@
 {
   "backend": {
-    "tests": 105,
+    "tests": 166,
     "failures": 0
   },
   "reviewer": "PASS",
   "docker": "PASS",
   "cleanInstall": "PASS",
-  "testedRuntimeFiles": 89,
+  "testedRuntimeFiles": 107,
   "runtimeMatchesCleanSource": true,
   "runtimeDrift": [],
-  "liveGemini": "PASS",
+  "liveGemini": "FAIL",
   "providerAvailability": {
-    "status": "AVAILABLE",
-    "model": "gemini-3.8-flash",
-    "liveWorkflowStatus": "PASS",
-    "successfulStages": 6,
-    "nativeAdkTools": [
-      "diagnose_service",
-      "read_account"
-    ],
-    "scope": "Five authenticated live HTTP workflow turns, six real model stages, no fallback"
+    "status": "BLOCKED_PROVIDER_QUOTA",
+    "configuredModel": "gemini-3.6-flash",
+    "latestConfiguredModelResult": "provider_http_429",
+    "alternateProbe": {
+      "model": "gemini-3.5-flash-lite",
+      "result": "provider_timeout",
+      "persistedConfigurationChange": false
+    },
+    "liveFallbackUsed": false,
+    "credentialsIncluded": false,
+    "userAction": "Cloud deployment deferred by user because no GCP credits are available. Optional cloud settings are prepared for later completion. Current Gemini quota is unavailable; no successful new live turn is claimed.",
+    "latestEvidence": "live-gemini-evidence.json"
   },
   "requirements": {
-    "PASS": 445,
+    "PASS": 436,
+    "BLOCKED_PROVIDER_QUOTA": 9,
     "EXCLUDED": 11
   },
-  "qualification": "BLOCKED: independent evaluator scores remain required; no self-assigned score",
+  "qualification": "BLOCKED: live Gemini evidence and independent evaluator scores remain required",
   "cloudDeployed": false,
   "demoVideo": "EXCLUDED_BY_USER",
   "independentScore": null

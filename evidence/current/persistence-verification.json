@@ -1,0 +1,11 @@
+{
+  "status": "PASS",
+  "project": "relay-repair-20261019",
+  "origin": "http://127.0.0.1:3110",
+  "caseId": "CASE-1F44BF27",
+  "actionId": "ACT-7c8acb7ba2274613b913d02c86b7e01c",
+  "sessionSurvivedEnterpriseRestart": true,
+  "receiptSurvivedEnterpriseRestart": true,
+  "reauthenticatedReplayDidNotWrite": true,
+  "replayTraceId": "TRACE-ffb4fb7cbab64494b8ca92789da9856e"
+}

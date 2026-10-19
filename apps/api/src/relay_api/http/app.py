@@ -1,4 +1,5 @@
 from contextlib import asynccontextmanager
+import asyncio
 import os
 import time
 from collections import defaultdict
@@ -13,6 +14,7 @@ from relay_api.core.origins import origin_allowed
 from relay_api.domain.models import Chat, Confirmation, Login
 from relay_api.evaluation.scenarios import run_scenario
 from relay_api.infrastructure.enterprise import Denied, IntegrationError
+from relay_api.infrastructure.storage import WorkflowBusy
 
 
 def create_app(engine: ResolutionService | None = None) -> FastAPI:
@@ -32,6 +34,7 @@ def create_app(engine: ResolutionService | None = None) -> FastAPI:
         docs_url="/docs" if os.getenv("APP_MODE", "REVIEWER") == "REVIEWER" else None,
     )
     app.state.attempts = defaultdict(list)
+    app.state.admission = asyncio.Semaphore(8)
     if engine is not None:
         app.state.engine = engine
 
@@ -55,7 +58,25 @@ def create_app(engine: ResolutionService | None = None) -> FastAPI:
             expected = os.getenv("PUBLIC_ORIGIN", str(request.base_url).rstrip("/"))
             if origin and not origin_allowed(origin, expected):
                 return JSONResponse({"error": "origin_denied"}, 403)
-        response = await call_next(request)
+        guarded = request.url.path in {
+            "/api/chat",
+            "/chat",
+            "/api/confirm",
+            "/api/handoff",
+            "/api/account/overview",
+        }
+        if guarded:
+            started = time.monotonic()
+            try:
+                await asyncio.wait_for(app.state.admission.acquire(), timeout=2)
+            except TimeoutError:
+                return await busy(request, WorkflowBusy((time.monotonic() - started) * 1000))
+            try:
+                response = await call_next(request)
+            finally:
+                app.state.admission.release()
+        else:
+            response = await call_next(request)
         response.headers.update(
             {
                 "Cache-Control": "no-store",
@@ -72,6 +93,19 @@ def create_app(engine: ResolutionService | None = None) -> FastAPI:
     @app.exception_handler(Denied)
     async def denied(request, error):
         return JSONResponse({"error": "access_denied"}, 403)
+
+    @app.exception_handler(WorkflowBusy)
+    async def busy(request, error):
+        from relay_api.infrastructure.storage import uid
+
+        service = request.app.state.engine
+        current = service.store.session(request.cookies.get("cx_session", ""))
+        subject = current["id"] if current else "anonymous"
+        trace = uid("TRACE")
+        service.store.emit("request.received", trace, subject)
+        service.store.emit("workflow.failed", trace, subject, status="failure", reason="admission_limit")
+        service.store.emit("request.finished", trace, subject, status="failure", duration=error.duration)
+        return JSONResponse({"error": "request_busy", "traceId": trace}, 503, headers={"Retry-After": "2"})
 
     @app.exception_handler(IntegrationError)
     async def integration_error(request, error):
@@ -150,9 +184,12 @@ def create_app(engine: ResolutionService | None = None) -> FastAPI:
 
     @app.post("/api/logout")
     def logout(request: Request):
+        service = request.app.state.engine
         current = session(request)
-        current["expires"] = 0
-        request.app.state.engine.store.save(current)
+        with service.store.workflow(current):
+            current = session(request)
+            current["expires"] = 0
+            service.store.save(current)
         response = JSONResponse({"status": "signed_out"})
         set_cookie(response, "", 0)
         return response
@@ -161,14 +198,20 @@ def create_app(engine: ResolutionService | None = None) -> FastAPI:
     @app.post("/chat", include_in_schema=False)
     def chat(request: Request, data: Chat):
         service = request.app.state.engine
-        with service.store.lock:
+        with service.store.workflow(session(request)):
             return service.chat(session(request), data)
 
     @app.post("/api/confirm")
     def confirm(request: Request, data: Confirmation):
         service = request.app.state.engine
-        with service.store.lock:
+        with service.store.workflow(session(request)):
             return service.confirm(session(request), data)
+
+    @app.post("/api/handoff")
+    def handoff(request: Request):
+        service = request.app.state.engine
+        with service.store.workflow(session(request)):
+            return service.handoff(session(request))
 
     @app.get("/api/account/overview")
     def overview(request: Request):
@@ -188,8 +231,7 @@ def create_app(engine: ResolutionService | None = None) -> FastAPI:
         if service.mode != "REVIEWER":
             raise Denied("reviewer_mode_required")
         try:
-            with service.store.lock:
-                return run_scenario(service, data.get("scenarioId", ""))
+            return run_scenario(service, data.get("scenarioId", ""))
         except ValueError:
             return JSONResponse({"error": "invalid_request"}, 400)
 

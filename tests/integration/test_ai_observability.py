@@ -66,7 +66,12 @@ def test_live_success_with_validated_double(stack, customer):
             replies=[
                 answer({"intent": "account", "service": "unknown", "confidence": 0.9}),
                 tool("read_account"),
-                answer({"fact_ids": [0], "answer": "Your active account uses Fiber 500 at 79.99 per month."}),
+                answer(
+                    {
+                        "fact_ids": [0],
+                        "answer": "Your plan is Fiber 500; monthly plan price 79.99; account status active.",
+                    }
+                ),
             ],
         )
     )
@@ -116,7 +121,7 @@ def test_live_provider_failure_does_not_use_reviewer(stack, customer, failure):
     r = app.chat(customer, Chat(message="my plan"))
     assert r["mode"] == "DEGRADED" and r["state"] == "ESCALATED"
     assert "Fiber 500" not in r["answer"] and not r["facts"]
-    assert "No fallback answer was used" in r["answer"]
+    assert "I haven't changed your account" in r["answer"]
     app.ai.select.assert_not_called()
     assert not any(e["eventType"] == "provider.fallback" for e in app.store.trace_events(r["traceId"]))
     assert (

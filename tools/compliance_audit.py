@@ -37,7 +37,7 @@ rules = {
             "test_adk_runner_calls_authorized_account_tool",
             "test_real_sdk_request_and_validation",
             "test_live_success_with_validated_double",
-            "test_live_provider_fallback",
+            "test_live_provider_failure_does_not_use_reviewer",
         ],
         "agents/runtime.py; agents/catalog.py; application/evidence.py; application/workflows.py; docs/GEMINI_INVOCATIONS.md",
         "001,002,008",
@@ -82,6 +82,7 @@ rules = {
     "grounding": (
         [
             "test_grounded_selection_rejects_fabrication",
+            "test_unsupported_prose_never_reaches_customer",
             "test_enterprise_record_identity_mismatch",
             "test_billing_grounding",
         ],
@@ -100,6 +101,7 @@ rules = {
             "test_interrupted_execution_requires_reconciliation_after_restart",
             "test_repeated_action_request_does_not_open_new_case",
             "test_confirmation_event_precedes_side_effect",
+            "test_uncertain_case_is_not_repeated_after_fresh_login",
         ],
         "application/workflows.py; infrastructure/enterprise.py; infrastructure/storage.py",
         "004,007",
@@ -107,7 +109,7 @@ rules = {
     "failure": (
         [
             "test_real_service_failure",
-            "test_live_provider_fallback",
+            "test_live_provider_failure_does_not_use_reviewer",
             "test_internal_processing_failure_preserves_correlated_handoff",
         ],
         "application/workflows.py; infrastructure/enterprise.py; ai/providers.py",
@@ -128,6 +130,7 @@ rules = {
             "test_event_ingestion_rejects_invalid_payload_safely",
             "test_structured_log_redacts_sensitive_values",
             "test_response_consistency_failure_is_failed_tool_not_success",
+            "test_tool_trace_contains_the_actual_normalized_bill_without_credentials",
         ],
         "infrastructure/storage.py; application/workflows.py; infrastructure/enterprise.py; docs/ARCHITECTURE.md",
         "001–008",
@@ -152,6 +155,15 @@ rows = []
 
 def state(rule):
     if rule == "live":
+        rate_limited = any(
+            e.get("eventType") == "ai.finished" and e.get("metadata", {}).get("reason") == "provider_http_429"
+            for e in live.get("events", [])
+        )
+        if live.get("status") != "PASS" and rate_limited:
+            return (
+                "BLOCKED_PROVIDER_QUOTA",
+                "Fresh paced live evaluation returned HTTP 429; no deterministic answer substituted. Available provider quota is required.",
+            )
         return (
             ("PASS", "Actual credentialed HTTP workflows and real Gemini events verified")
             if live.get("status") == "PASS"
@@ -478,7 +490,7 @@ audit = dict(
         "minimumFirstFourCategoryPercent": 70,
         "verifiedScore": None,
         "status": "BLOCKED",
-        "reason": "Only an evidence-based evaluator assessment can establish numeric qualification",
+        "reason": "Thresholds come from resources/challenge/docs/scoring.md:12. Only the external evaluator can assign a score.",
     },
     deployment={
         "prepared": True,

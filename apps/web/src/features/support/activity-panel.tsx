@@ -30,6 +30,9 @@ export function ActivityPanel({
         "confirmation.requested",
         "action.completed",
         "provider.fallback",
+        "provider.unavailable",
+        "agent.output_rejected",
+        "clarification.requested",
         "workflow.escalated",
       ].includes(event.eventType),
     )

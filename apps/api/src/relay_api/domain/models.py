@@ -1,5 +1,5 @@
 from typing import Literal
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 
 class Strict(BaseModel):
@@ -14,6 +14,13 @@ class Login(Strict):
 class Chat(Strict):
     message: str = Field(min_length=1, max_length=2000)
     accountId: str | None = Field(default=None, pattern=r"^ACC-\d{4}$")
+
+    @field_validator("message")
+    @classmethod
+    def nonempty_message(cls, value):
+        if not value.strip():
+            raise ValueError("empty_message")
+        return value.strip()
 
 
 class Confirmation(Strict):

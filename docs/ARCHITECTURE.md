@@ -12,8 +12,7 @@ company records and explains what it found.
 2. The website sends your request to the app's backend.
 3. The backend checks who you are and what account you can access.
 4. It reads the matching sample records.
-5. Gemini may help understand the question and choose which verified facts to
-   show. It cannot choose another customer's account or create a case.
+5. Gemini may help understand the question and write a reply from verified facts. It cannot choose another customer's account or create a case.
 6. The app saves a record of what happened.
 
 If the app is about to create a support case, it shows you what it plans to do
@@ -25,7 +24,7 @@ and waits for you to confirm. A message such as “yes” in the chat is not eno
 |---|---|
 | Website (Next.js) | The pages customers and support staff use. |
 | Backend (FastAPI) | Checks requests, runs the support steps, and controls access. |
-| Gemini (through Google ADK) | Helps understand a question and select facts. It cannot access accounts by itself. |
+| Gemini (through Google ADK) | Understands a question and writes a reply from verified facts. It cannot access accounts by itself. |
 | Enterprise gateway | The only route from the backend to the sample company services. |
 | Sample services | Fake account, billing, network, and legacy subscriber records. |
 | SQLite database | Saves local sessions, case actions, and activity records. |
@@ -53,3 +52,25 @@ deployment.
 
 See the [deployment guide](../deployment/README.md) before running the app
 outside a local demo.
+
+
+## Current execution boundaries
+
+```mermaid
+flowchart LR
+    Browser[Customer and support browser] --> Web[Next.js allowlisted gateway]
+    subgraph Private[Private backend network]
+      Web --> API[FastAPI workflow and deterministic authorization]
+      API --> ADK[Google ADK router and specialist]
+      API --> Guard[Session-bound enterprise gateway]
+      Guard --> JSON[Supplied JSON enterprise services]
+      Guard --> XML[Legacy XML adapter and service]
+      API --> DB[(SQLite sessions and durable action markers)]
+      API --> Events[Schema-validated correlated events]
+      Events --> Views[Trace explorer and event-derived metrics]
+    end
+    ADK --> Gemini[Gemini API: server-only credential]
+    ADK --> Guard
+    Gemini --> Validate[Structured reply and claim validation]
+    Validate --> API
+```

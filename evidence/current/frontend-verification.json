@@ -1,0 +1,13 @@
+{
+  "status": "PASS",
+  "tests": 13,
+  "assertions": 37,
+  "typecheck": "PASS",
+  "productionBuild": "PASS",
+  "executionSource": "isolated clean release",
+  "commands": [
+    "bun run test:web",
+    "bun run typecheck",
+    "bun run build"
+  ]
+}

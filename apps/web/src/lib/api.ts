@@ -38,6 +38,8 @@ export async function api<T>(path: string, data?: unknown): Promise<T> {
         "We couldn’t reach the resolution service. Please try again.",
       login_rate_limited:
         "Too many sign-in attempts. Please wait a minute and try again.",
+      request_busy:
+        "Another request is still running. Please wait a moment, then try again.",
     };
     throw new ApiError(
       response.status,

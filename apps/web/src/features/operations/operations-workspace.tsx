@@ -13,6 +13,7 @@ import {
   Users,
 } from "lucide-react";
 import { api, percent, titleCase } from "@/lib/api";
+import { workflowOutcome } from "@/lib/workflow-state";
 import type { Escalation, Metrics, Session, TelemetryEvent } from "@/lib/types";
 import { Busy, Empty } from "@/components/ui";
 export function OperationsWorkspace({
@@ -144,7 +145,7 @@ export function OperationsWorkspace({
                 name: "Support requests",
                 value: metrics.requests,
                 icon: Activity,
-                foot: "Conversation & confirmation requests",
+                foot: "All tracked workflows, including account reads",
               },
               {
                 name: "Resolution rate",
@@ -271,21 +272,13 @@ export function OperationsWorkspace({
                 </thead>
                 <tbody>
                   {workflows.map(([id, group]) => {
-                    const final = group
-                      .filter((e) => e.eventType === "workflow.transition")
-                      .at(-1);
                     const denied = group.some(
-                      (e) => e.eventType === "authorization.denied",
+                      (event) => event.eventType === "authorization.denied",
                     );
                     const finished = group.find(
-                      (e) => e.eventType === "request.finished",
+                      (event) => event.eventType === "request.finished",
                     );
-                    const state = denied
-                      ? "Access denied"
-                      : String(
-                          final?.metadata.current ??
-                            (finished ? "Complete" : "In progress"),
-                        );
+                    const state = workflowOutcome(group);
                     const tools = [
                       ...new Set(
                         group
@@ -311,7 +304,7 @@ export function OperationsWorkspace({
                         </td>
                         <td>
                           <span
-                            className={`outcome ${denied || state === "ESCALATED" ? "attention" : ""}`}
+                            className={`outcome ${denied || state === "ESCALATED" || state === "FAILED" ? "attention" : ""}`}
                           >
                             {titleCase(state)}
                           </span>

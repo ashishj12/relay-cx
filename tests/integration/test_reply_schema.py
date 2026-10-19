@@ -25,7 +25,9 @@ def test_specialist_enforces_schema_after_real_authorized_tool(stack):
     session = app.login({"username": "jordan.lee", "password": "ReviewerPass-1002"})[1]
     app.mode = "LIVE_AI"
     reply = (
-        "Your subscriber status is active. Network checks look normal and diagnostics found no device fault."
+        "Network status: normal; incident none.\n\n"
+        "Diagnostics: no_device_fault_detected.\n\n"
+        "Subscriber record: subscriber active; network normal; observed 2026-10-13T08:30:00Z."
     )
     model = RecordingModel(
         model="scripted",

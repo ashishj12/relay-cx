@@ -15,10 +15,12 @@ details.
 
 ## What happens when the sample service restarts
 
-The sample service keeps tokens and case references in memory. Restarting it
-forgets them, so sign in again. The app saves its own case state in the local
-database and will not automatically repeat a case request whose result is
-unclear.
+Docker stores hashed token identities and confirmed case receipts in a separate
+enterprise database volume. Restarting the service preserves valid identities
+and receipts. The API stores its account-level action ledger separately. After
+an uncertain write it can look up the original operation key; a missing or
+inconsistent receipt never authorizes another write. Local sample-service runs
+without `MOCK_DATABASE_PATH` use temporary in-memory state.
 
 ## This is not real company sign-in
 

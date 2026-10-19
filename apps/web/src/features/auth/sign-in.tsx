@@ -102,8 +102,8 @@ export function SignIn({
               <div>
                 <strong>We understand the request</strong>
                 <p>
-                  A router identifies the right specialist and asks when
-                  something is missing.
+                  Tell us what happened. We’ll ask a short question if we need
+                  more detail.
                 </p>
               </div>
               <span className="path-type">ROUTE</span>
@@ -113,8 +113,8 @@ export function SignIn({
               <div>
                 <strong>The specialist checks your records</strong>
                 <p>
-                  Account, billing and service tools stay bound to your
-                  authenticated account.
+                  We check only the account you signed in to, and explain what
+                  we find.
                 </p>
               </div>
               <span className="path-type">VERIFY</span>
@@ -145,7 +145,10 @@ export function SignIn({
             <LockKeyhole size={21} />
           </div>
           <h2 id="sign-in-heading">Welcome to Relay.</h2>
-          <p>Sign in to your resolution workspace.</p>
+          <p>
+            Sign in to see your bill and account. Your conversation stays
+            private.
+          </p>
           <form onSubmit={submit}>
             <label htmlFor="username">Username</label>
             <input
@@ -214,7 +217,8 @@ export function SignIn({
             ))}
           </details>
           <p className="auth-footnote">
-            <ShieldCheck size={14} /> Your session stays on this device.
+            <ShieldCheck size={14} /> Sign-in lasts up to an hour. Sign in again
+            to return to your saved conversation.
           </p>
         </section>
       </div>

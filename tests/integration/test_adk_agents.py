@@ -33,7 +33,12 @@ def test_adk_runner_calls_authorized_account_tool(stack, customer):
         replies=[
             answer({"intent": "account", "service": "unknown", "confidence": 1.0}),
             tool("read_account"),
-            answer({"fact_ids": [0], "answer": "Your active account uses Fiber 500 at 79.99 per month."}),
+            answer(
+                {
+                    "fact_ids": [0],
+                    "answer": "Your plan is Fiber 500; monthly plan price 79.99; account status active.",
+                }
+            ),
         ],
     )
     service.ai = AdkProvider(model=model)
@@ -70,7 +75,10 @@ def test_adk_caches_repeated_read_tool_calls(stack, customer):
             tool("read_billing"),
             tool("read_billing"),
             answer(
-                {"fact_ids": [0, 1, 2], "answer": "Here are the verified billing details for your account."}
+                {
+                    "fact_ids": [0, 1, 2, 3],
+                    "answer": "Your plan is Fiber 500; monthly plan price 79.99; account status active.\n\nYour bill: 2026-09 total 84.99.\n\nFiber 500: 79.99.\n\nEquipment: 5.00.",
+                }
             ),
         ],
     )

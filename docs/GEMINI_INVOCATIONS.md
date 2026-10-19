@@ -1,25 +1,19 @@
-# Google ADK invocation register
+# Gemini invocation register
 
-Live mode uses native Google ADK LlmAgent and Runner components. Gemini classifies the request, the relevant specialist calls an authorized tool, and Gemini writes the customer-facing answer from the returned normalized facts. The backend returns that answer rather than joining fixture strings. The enterprise services still use the supplied challenge data; live AI does not mean a connection to a real telecom operator.
+LIVE_AI uses native Google ADK LlmAgent and Runner components with the Gemini Developer API. The API key and model come from ignored local environment settings; no customer, account or service identifier is accepted from a model tool argument.
 
-| Agent | Behavior | Authority |
-|---|---|---|
-| request_router | Classify redacted customer messages into intent, service and confidence | No enterprise tools |
-| account_agent | Call read_account and answer using its verified results | Read only, authenticated account |
-| billing_agent | Call read_billing and explain verified charges | Read only, authenticated account |
-| service_agent | Call diagnose_service and explain verified network, diagnostic and legacy results | Read only, authorized service |
-| action_controller | Propose, confirm and verify cases in application code | Write only after explicit confirmation |
+| Stage | Actual invocation | Data supplied | Authority |
+|---|---|---|---|
+| Interpretation | request_router | Last four redacted customer messages | Validated intent, service and confidence only |
+| Evidence retrieval | account_agent, billing_agent or service_agent | Validated route and the current question | A single read-only tool closes over the authenticated account |
+| Reply | Same specialist after its tool returns | Verified fact IDs and approved factual paragraphs | Choose a verified answer; no new factual wording |
 
-Tools accept no customer IDs or URLs from the model. They close over the authorized session and cache repeated reads. Strict Pydantic validation requires the model to include every verified fact ID exactly once and provide a bounded answer. Additional checks reject new numeric claims, URLs, leaked credentials and unsupported action-completion language. These checks supplement instructions to stay within source evidence; they are not a proof of semantic equivalence. Conflicts and integration failures still stop the normal answer. Model text cannot change permissions, modify account records or create cases.
+The final structured schema enumerates answers composed from the current verified records. The model must return every fact ID and the factual paragraphs unchanged, optionally with an approved introduction. A separate backend validator checks the same contract. This is intentionally extractive: unrestricted prose cannot be proven grounded merely by checking its numbers or attaching source IDs. Model interpretation and native tool calling remain mandatory in normal LIVE_AI inquiries. An invalid or missing model reply stops the answer and saves an escalation; no Reviewer answer is substituted.
 
-A typical inquiry makes three logical model calls: interpretation, the specialist tool request, and the specialist's grounded reply. The previous single-fact shortcut is removed so even account inquiries receive a Gemini-authored answer. Clarification and sensitive action confirmations remain controlled by the application.
+Explicit customer controls do not need AI authority. Sign-in, ownership, human-review requests, unsupported-operation refusals and confirmed case execution are deterministic. Human support therefore remains usable when the model is unavailable. Reviewer mode replaces only interpretation and fact ordering; it still runs actual HTTP adapters, validation, actions and telemetry.
 
-LIVE_AI never invokes Reviewer after a model failure. Timeout, invalid output, missing configuration or provider errors emit ai.finished with failure and provider.unavailable, preserve an escalation record and return a clear operational error. The request is marked DEGRADED, but its error is not a successful answer and contains no substituted deterministic explanation. Explicit REVIEWER and configured DEGRADED modes retain deterministic behavior for offline evaluation.
+A normal inquiry uses interpretation, specialist tool selection and final structured reply. Each ADK run is capped at three LLM calls and a 40-second maximum stage deadline. SDK transport attempts are limited to three for transient 408/5xx errors; 429 and authentication errors are not retried. Queue admission is separately bounded, with eight admitted workflows and two-second waits for capacity/account ownership. Different accounts can progress independently. Provider callback state is request-local.
 
-HTTP 429 and authentication errors are not retried. Transient HTTP 408/500/502/503/504 responses have at most three SDK attempts with backoff and jitter, all within the stage deadline. AI_TIMEOUT controls each stage, with a 40-second maximum. The local Docker environment uses 15 seconds. A multi-stage request can take longer than one stage deadline. Lower reasoning effort remains enabled for supported Flash models; successful immediate answers cannot be guaranteed when the provider is slow or unavailable.
+Events record actual agent/tool execution and sanitized rejection categories. Account, price, bill-period and service fields appear in allowlisted trace summaries; credentials and raw model output do not. Logs do not claim that a scripted test is actual Gemini inference.
 
-Execution events record agent runs, tool requests, tool returns, output validation and sanitized provider outcomes. No credential or raw provider output is included in telemetry. Source facts remain available in the response and execution trace separately from the generated answer.
-
-Run `python tools/evaluate.py --mode LIVE_AI --output evidence/current/live-gemini-evidence.json` to collect fresh live evidence. Scripted tests prove the control paths, not genuine model inference. Historical release evidence predates this reply change; consult the scoped hotfix evidence for current verification. No cloud deployment is claimed.
-
-Final-reply format: after an authorized tool returns evidence, the ADK before-model callback requests application/json with the GroundedReply schema and disables further advertised tools for that response. The initial tool-selection request remains unconstrained so real tool calling still works. Validation failures emit agent.output_rejected with a controlled reason code (schema, fact selection, numeric claim, secret/URL or action claim); raw reply text is never included. Reference: [Gemini structured outputs](https://ai.google.dev/gemini-api/docs/generate-content/structured-output).
+Run `python tools/evaluate.py --mode LIVE_AI --output evidence/current/live-gemini-evidence.json` for real-provider proof. A quota error is a failed live verification, even when all controlled-model and offline scenarios pass. GCP credit is not required for Reviewer mode. Availability and billing of the configured Gemini project must be checked separately.

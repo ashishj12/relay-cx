@@ -9,10 +9,11 @@ ROOT = Path(__file__).resolve().parents[1]
 
 def verify():
     project = os.getenv("COMPOSE_PROJECT_NAME", "relay-release")
+    port = int(os.getenv("REVIEW_PORT", "3000"))
     results = []
     loopback = []
     for host in ("localhost", "127.0.0.1"):
-        origin = f"http://{host}:3000"
+        origin = f"http://{host}:{port}"
         with httpx.Client(
             base_url=origin, trust_env=False, timeout=120, headers={"Origin": origin}
         ) as browser:
@@ -46,7 +47,7 @@ def verify():
                     "logout": "PASS",
                 }
             )
-    with httpx.Client(base_url="http://127.0.0.1:3000", trust_env=False, timeout=120) as client:
+    with httpx.Client(base_url=f"http://127.0.0.1:{port}", trust_env=False, timeout=120) as client:
         client.get("/").raise_for_status()
         client.get("/api/health").raise_for_status()
         assert client.post("/api/chat", json={"message": "my plan"}).status_code == 401
@@ -54,7 +55,7 @@ def verify():
         client.post(
             "/api/login",
             json={"username": "support.agent", "password": "ReviewerPass-3001"},
-            headers={"Origin": "http://127.0.0.1:3000"},
+            headers={"Origin": f"http://127.0.0.1:{port}"},
         ).raise_for_status()
         for number in range(1, 9):
             response = client.post("/api/reviewer/run", json={"scenarioId": f"SCN-{number:03}"})
@@ -77,7 +78,7 @@ def verify():
     evidence = {
         "status": "PASS",
         "command": "python tools/verify_containers.py",
-        "publicGateway": "http://127.0.0.1:3000",
+        "publicGateway": f"http://127.0.0.1:{port}",
         "unauthenticatedDenied": True,
         "foreignOriginDenied": True,
         "loopbackChecks": loopback,

@@ -1,0 +1,28 @@
+{
+  "status": "PASS",
+  "project": "relay-cx",
+  "origin": "http://localhost:3000",
+  "mode": "LIVE_AI",
+  "actualGeminiSuccessVerified": false,
+  "modelInvokedByHandoff": false,
+  "traceId": "TRACE-02b7162fbc584d0a9804139de6532f88",
+  "escalationId": "ESC-e277e95d0d3d443aaaee7c13844b2a3c",
+  "existingEnvironmentPreserved": true,
+  "optionalCloudConfigurationAdded": true,
+  "cloudProvisioned": false,
+  "privateStateBackupVerified": true,
+  "services": {
+    "api": {
+      "state": "running",
+      "health": "healthy"
+    },
+    "enterprise": {
+      "state": "running",
+      "health": "healthy"
+    },
+    "web": {
+      "state": "running",
+      "health": ""
+    }
+  }
+}

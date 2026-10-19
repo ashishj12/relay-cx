@@ -1,4 +1,5 @@
 import hmac
+import re
 import secrets
 import threading
 import json
@@ -9,6 +10,7 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import urlparse, parse_qs
 import xml.etree.ElementTree as ET
+from relay_mock.state import SyntheticState
 
 BASE = Path(__file__).resolve().parents[4] / "resources/challenge"
 
@@ -25,6 +27,7 @@ CASES = {}
 KEYS = {}
 TOKENS = {}
 CASE_LOCK = threading.Lock()
+STATE = SyntheticState(os.environ["MOCK_DATABASE_PATH"]) if os.getenv("MOCK_DATABASE_PATH") else None
 
 
 def find(xs, k, v):
@@ -78,13 +81,20 @@ class H(BaseHTTPRequestHandler):
         self.wfile.write(b)
 
     def body(self):
-        return self.rfile.read(int(self.headers.get("Content-Length", "0")))
+        size = int(self.headers.get("Content-Length", "0"))
+        if not 0 <= size <= 8192:
+            raise ValueError("invalid_body_size")
+        return self.rfile.read(size)
 
     def identity(self):
         value = self.headers.get("Authorization", "")
         token = value.removeprefix("Bearer ") if value.startswith("Bearer ") else ""
         record = TOKENS.get(token)
-        if not record or record["expires"] <= time.time():
+        if record is None and STATE and token:
+            saved = STATE.identity(token)
+            if saved:
+                record = {"customer": find(CUSTOMERS, "customerId", saved[0]), "expires": saved[1]}
+        if not record or not record.get("customer") or record["expires"] <= time.time():
             self.js(401, {"error": "enterprise_authentication_required"})
             return None
         return record["customer"]
@@ -112,6 +122,16 @@ class H(BaseHTTPRequestHandler):
         customer = self.identity()
         if customer is None:
             return
+        if len(a) == 4 and a[:3] == ["api", "support-cases", "by-key"]:
+            if not re.fullmatch(r"ACT-[a-f0-9]{32}", a[3]):
+                return self.js(400, {"error": "invalid_operation"})
+            if not self.owns(customer, customer_id=customer["customerId"]):
+                return
+            receipt = STATE.receipt(customer["customerId"], a[3]) if STATE else None
+            if receipt is None:
+                cid = KEYS.get((customer["customerId"], a[3]))
+                receipt = CASES.get(cid)
+            return self.js(200, receipt) if receipt else self.js(404, {"error": "not_found"})
         if len(a) == 3 and a[:2] == ["api", "customers"]:
             if not self.owns(customer, customer_id=a[2]):
                 return
@@ -155,11 +175,20 @@ class H(BaseHTTPRequestHandler):
 
     def do_POST(self):
         p = urlparse(self.path)
+        # Drain the bounded request before any early response, including a 401.
+        # Closing with an unread POST body can reset the connection on Windows.
+        body = self.body()
         if p.path == "/api/auth/login":
             m = self.mode("auth", "normal")
             if m == "unavailable":
                 return self.js(503, {"error": "auth_unavailable"})
-            d = json.loads(self.body() or b"{}")
+            d = json.loads(body or b"{}")
+            if (
+                not isinstance(d, dict)
+                or not isinstance(d.get("username"), str)
+                or not isinstance(d.get("password"), str)
+            ):
+                return self.js(400, {"error": "invalid_login_request"})
             c = next(
                 (
                     x
@@ -175,6 +204,8 @@ class H(BaseHTTPRequestHandler):
                 return self.js(401, {"error": "invalid_credentials"})
             token = secrets.token_urlsafe(32)
             TOKENS[token] = {"customer": c, "expires": time.time() + (0 if m == "expired" else 3600)}
+            if STATE:
+                STATE.issue(token, c["customerId"], TOKENS[token]["expires"])
             return self.js(
                 200,
                 {
@@ -190,11 +221,19 @@ class H(BaseHTTPRequestHandler):
             return
         if p.path == "/api/support-cases":
             # Consume the POST before replying, including simulated failures, to avoid TCP resets.
-            body = self.body()
             if self.mode("case", "success") == "unavailable":
                 return self.js(503, {"error": "case_unavailable"})
             d = json.loads(body or b"{}")
-            if set(d) != {"customerId", "accountId", "summary", "idempotencyKey"}:
+            if not isinstance(d, dict) or set(d) != {"customerId", "accountId", "summary", "idempotencyKey"}:
+                return self.js(400, {"error": "invalid_case_request"})
+            if (
+                not isinstance(d["accountId"], str)
+                or not re.fullmatch(r"ACC-\d+", d["accountId"])
+                or not isinstance(d["customerId"], str)
+                or not re.fullmatch(r"CUST-\d+", d["customerId"])
+                or not isinstance(d["idempotencyKey"], str)
+                or not 1 <= len(d["idempotencyKey"]) <= 100
+            ):
                 return self.js(400, {"error": "invalid_case_request"})
             if not self.owns(customer, account=d.get("accountId"), customer_id=d.get("customerId")):
                 return
@@ -205,14 +244,27 @@ class H(BaseHTTPRequestHandler):
                 return self.js(400, {"error": "idempotency_key_required"})
             with CASE_LOCK:
                 key = (customer["customerId"], k)
+                persisted = STATE.receipt(customer["customerId"], k) if STATE else None
+                if persisted:
+                    return self.js(409, {"error": "duplicate", "caseId": persisted["caseId"]})
                 if key in KEYS:
                     return self.js(409, {"error": "duplicate", "caseId": KEYS[key]})
                 cid = "CASE-" + uuid.uuid4().hex[:8].upper()
+                receipt = {"caseId": cid, "status": "open", **d}
+                if STATE and not STATE.create(receipt):
+                    return self.js(409, {"error": "duplicate"})
                 KEYS[key] = cid
-                CASES[cid] = {"caseId": cid, "status": "open", **d}
+                CASES[cid] = receipt
             return self.js(201, CASES[cid])
         if p.path == "/api/diagnostics":
-            d = json.loads(self.body() or b"{}")
+            d = json.loads(body or b"{}")
+            if (
+                not isinstance(d, dict)
+                or set(d) != {"serviceId"}
+                or not isinstance(d.get("serviceId"), str)
+                or not re.fullmatch(r"SVC-\d+", d["serviceId"])
+            ):
+                return self.js(400, {"error": "invalid_diagnostic_request"})
             if not self.owns(customer, service=d.get("serviceId", "")):
                 return
             return self.js(
@@ -224,6 +276,8 @@ class H(BaseHTTPRequestHandler):
                 },
             )
         if p.path == "/api/legacy/subscriber-status":
+            if b"<!DOCTYPE" in body.upper() or b"<!ENTITY" in body.upper():
+                return self.js(400, {"error": "invalid_xml_request"})
             m = self.mode("legacy", "success")
             if m == "timeout":
                 time.sleep(8)
@@ -233,11 +287,19 @@ class H(BaseHTTPRequestHandler):
                 raw = b"<SubscriberStatusResponse><BROKEN>"
             else:
                 try:
-                    r = ET.fromstring(self.body())
+                    r = ET.fromstring(body)
                     acct = r.findtext("AccountNumber")
                     svc = r.findtext("ServiceNumber")
                 except Exception:
                     acct = svc = ""
+                if (
+                    not acct
+                    or not svc
+                    or r.tag != "SubscriberStatusRequest"
+                    or len(r.findall("AccountNumber")) != 1
+                    or len(r.findall("ServiceNumber")) != 1
+                ):
+                    return self.js(400, {"error": "invalid_xml_request"})
                 if not self.owns(customer, account=acct, service=svc):
                     return
                 record = LEGACY_RECORDS[(acct, svc)]

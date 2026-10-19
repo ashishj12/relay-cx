@@ -1,0 +1,22 @@
+{
+  "status": "PASS",
+  "origin": "http://localhost:3100",
+  "mode": "REVIEWER",
+  "viewport": {
+    "width": 319,
+    "height": 704
+  },
+  "checks": [
+    "invalid login gives a clear error",
+    "Jordan mobile data inquiry uses enterprise diagnostics and legacy results",
+    "case proposal waits for confirmation and returns a case receipt",
+    "cross-customer account request is denied without foreign reads",
+    "execution details show the denial",
+    "enterprise restart prompts fresh sign-in",
+    "support view shows event-derived activity and handoff context",
+    "all eight mandatory scenarios pass from the Evaluation screen"
+  ],
+  "mandatoryScenariosPassed": 8,
+  "screenshot": "evidence/current/browser-review-summary.png",
+  "scope": "Historical browser check before this remediation; see customer remediation evidence for current UI."
+}
