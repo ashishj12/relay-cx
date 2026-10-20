@@ -10,9 +10,9 @@ Built for Topcoder's **Enterprise AI Customer Experience Resolution System** cha
 
 [**Play the demo video on Google Drive →**](https://drive.google.com/file/d/18qgT4OUle0U0e10KPms8YS1P_VFmqvDr/view?usp=drive_link)
 
-## Start in mock mode
+## Start in REVIEWER mode
 
-For a first review, use **mock mode**. Its actual configuration name is `REVIEWER`; `APP_MODE=MOCK` is not a supported value. This mode needs no Gemini key or GCP credits. It replaces the AI steps with fixed rules while still running the local service calls, access checks, case actions, and traces.
+For a first review, use **REVIEWER mode**. This mode needs no Gemini key or GCP credits. It replaces the AI steps with fixed rules while still running the local service calls, access checks, case actions, and traces.
 
 **1. Prepare the environment file.** Extract the submission and open a terminal in the folder containing `compose.yaml`. Create `.env` from the example if it does not exist.
 
@@ -28,7 +28,7 @@ macOS/Linux:
 [ -f .env ] || cp .env.example .env
 ```
 
-**2. Set mock mode.** Open `.env` and check these values. Existing Gemini credentials can stay in the file; Reviewer mode does not use them.
+**2. Set REVIEWER mode.** Open `.env` and check these values. Existing Gemini credentials can stay in the file; Reviewer mode does not use them.
 
 ```dotenv
 APP_MODE=REVIEWER
