@@ -10,11 +10,9 @@ ROOT = Path(__file__).resolve().parents[1]
 SOURCE = ROOT / "docs/challenge/ORIGINAL_CHALLENGE.md"
 lines = SOURCE.read_text(encoding="utf-8-sig").splitlines()
 
-
 def read(name, default=None):
     file = ROOT / name
     return json.loads(file.read_text()) if file.exists() else (default or {})
-
 
 http = read("evidence/current/http-scenarios.json")
 live = read("evidence/current/live-gemini-evidence.json")

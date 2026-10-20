@@ -10,7 +10,7 @@
   "apps/api/requirements.txt": "a87fb9c83eb37e986a3a837b7cb0d94532adbf70a3b0ae2bc4ef462ab9280f87",
   "apps/api/src/relay_api/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
   "apps/api/src/relay_api/__main__.py": "9e5c3c5ca45e6564ffae64f02a0422a11175e936a05dc0442f4b4f3038da7eda",
-  "apps/api/src/relay_api/agents/__init__.py": "7c4a6a8a85585b06e701c2496d5c4b6d7ceb7e841c0fd3634b797bbf24e91313",
+  "apps/api/src/relay_ssapi/agents/__init__.py": "7c4a6a8a85585b06e701c2496d5c4b6d7ceb7e841c0fd3634b797bbf24e91313",
   "apps/api/src/relay_api/agents/catalog.py": "4bac9826ae71c0360d34f4ab1c2032152c74c6074496df087d5bccce4c566c21",
   "apps/api/src/relay_api/agents/runtime.py": "982f2ce15b80ec9a989de809babc1b915d1f525cfb768578528001547a77f5f7",
   "apps/api/src/relay_api/ai/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",

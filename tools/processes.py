@@ -1,7 +1,6 @@
 import os
 import subprocess
 
-
 def stop_children(children):
     for child in children:
         if child.poll() is not None:

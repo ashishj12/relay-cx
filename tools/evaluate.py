@@ -14,13 +14,11 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "apps/api/src"))
 from relay_api.core.config import load_environment  # noqa: E402
 
-
 def free_port():
     with socket.socket() as sock:
         sock.bind(("127.0.0.1", 0))
         return sock.getsockname()[1]
-
-
+    
 def evaluate(mode="REVIEWER", output=None):
     load_environment()
     if mode == "LIVE_AI" and not all(os.getenv(k) for k in ("GEMINI_API_KEY", "GEMINI_MODEL")):

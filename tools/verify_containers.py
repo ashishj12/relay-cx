@@ -6,7 +6,6 @@ import httpx
 
 ROOT = Path(__file__).resolve().parents[1]
 
-
 def verify():
     project = os.getenv("COMPOSE_PROJECT_NAME", "relay-release")
     port = int(os.getenv("REVIEW_PORT", "3000"))
@@ -89,7 +88,6 @@ def verify():
     (ROOT / "evidence/current/docker-verification.json").write_text(
         json.dumps(evidence, indent=2), encoding="utf-8"
     )
-
 
 if __name__ == "__main__":
     verify()

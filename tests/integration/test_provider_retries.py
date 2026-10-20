@@ -1,5 +1,3 @@
-"""Exercise the actual asynchronous SDK retry transport against an isolated HTTP server."""
-
 import asyncio
 import json
 import threading

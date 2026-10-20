@@ -7,7 +7,6 @@ import time
 from urllib.parse import urlparse
 import httpx
 
-
 def verify(project, origin, output):
     if not re.fullmatch(r"[a-z0-9][a-z0-9_-]{0,60}", project):
         raise ValueError("invalid_compose_project")

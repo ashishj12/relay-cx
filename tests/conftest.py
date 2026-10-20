@@ -11,7 +11,6 @@ from relay_api.http.app import create_app
 
 ROOT = Path(__file__).resolve().parents[1]
 
-
 @pytest.fixture
 def stack(tmp_path, monkeypatch):
     monkeypatch.setenv("APP_MODE", "REVIEWER")
@@ -47,7 +46,6 @@ def stack(tmp_path, monkeypatch):
     enterprise.shutdown()
     enterprise.server_close()
     service.store.db.close()
-
 
 @pytest.fixture
 def customer(stack):

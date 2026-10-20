@@ -47,7 +47,6 @@ def test_http_auth_and_roles(stack):
         assert c.post("/api/logout", json={}).status_code == 200
         assert c.get("/api/session").status_code == 401
 
-
 def test_admin_sample_credentials_grant_support_workspace(stack):
     _, _, url = stack
     with httpx.Client(base_url=url, trust_env=False) as client:

@@ -3,7 +3,6 @@ import os
 from pathlib import Path
 import sqlite3
 
-
 def backup(database: Path, output: Path) -> None:
     source = database.resolve(strict=True)
     output = output.resolve()
@@ -21,7 +20,6 @@ def backup(database: Path, output: Path) -> None:
     except Exception:
         output.unlink(missing_ok=True)
         raise
-
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()

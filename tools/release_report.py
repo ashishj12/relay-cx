@@ -5,11 +5,9 @@ import xml.etree.ElementTree as ET
 
 ROOT = Path(__file__).resolve().parents[1]
 
-
 def read(name):
     file = ROOT / "evidence/current" / name
     return json.loads(file.read_text(encoding="utf-8")) if file.exists() else {}
-
 
 def report():
     suite = ET.parse(ROOT / "evidence/current/pytest.xml").getroot()
@@ -53,7 +51,6 @@ def report():
     )
     print(json.dumps(result, indent=2))
     return result
-
 
 if __name__ == "__main__":
     report()

@@ -2,7 +2,6 @@ import pytest
 from relay_api.agents.runtime import AdkProvider
 from relay_api.domain.models import Chat
 
-
 @pytest.mark.parametrize("live", [False, True])
 def test_mobile_query_on_home_account_explains_service_scope(stack, customer, live):
     app = stack[0]
